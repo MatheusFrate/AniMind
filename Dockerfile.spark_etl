@@ -1,0 +1,21 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instala dependências de sistema (incluindo o Java para o PySpark)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    default-jre-headless \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME=/usr/lib/jvm/default-java
+ENV PYTHONPATH=/app
+
+# Copia e instala dependências Python (onde está o pyspark)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt numpy pandas
+
+COPY . .
+
+# Comando default, mas pode ser sobrescrito
+CMD ["python", "elt_spark/02_silver_to_gold/process_recommendation_features.py"]
