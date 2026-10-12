@@ -75,4 +75,8 @@ Acesse o dashboard em **http://localhost:8000** e a documentação da API em **h
 
 ## 📸 Screenshots
 
-> _Adicione aqui prints do dashboard em `docs/`._
+### 📊 Visão Geral & Estatísticas do Perfil (`mfrate`)
+![Dashboard Overview](docs/dashboard_overview.png)
+
+### 🤖 Motor de IA: Insights Pessoais & Recomendações (Top 20 Discovery)
+![Recomendações da IA](docs/dashboard_recommendations.png)
