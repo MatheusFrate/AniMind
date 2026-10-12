@@ -51,6 +51,7 @@ class NewsItemSchema(BaseModel):
 
 
 @router.post('/batch')
+@router.post('/news/batch')
 def batch_insert_news(
     news_items: List[NewsItemSchema],
     db: Session = Depends(get_db)
