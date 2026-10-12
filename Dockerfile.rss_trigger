@@ -1,0 +1,18 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Desabilita buffering do Python (logs aparecem em tempo real no Docker)
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONPATH=/app
+
+# Copia requirements e instala dependências Python
+COPY extractors/rss_extractor/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copia o código dos extratores (mantendo o pacote 'extractors')
+COPY extractors/ ./extractors/
+
+# Executa o trigger
+CMD ["python", "-u", "-m", "extractors.rss_extractor.trigger"]
