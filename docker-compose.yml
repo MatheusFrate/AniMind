@@ -1,0 +1,91 @@
+services:
+
+  # ==========================================
+  # Banco de Dados PostgreSQL
+  # ==========================================
+  db:
+    image: postgres:15-alpine
+    container_name: animind-db
+    restart: always
+    environment:
+      POSTGRES_USER: animind_user
+      POSTGRES_PASSWORD: animind_password
+      POSTGRES_DB: animind_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # ==========================================
+  # Serviço Web / FastAPI
+  # ==========================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: animind-api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://animind_user:animind_password@db:5432/animind_db
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - REDIRECT_URI=${REDIRECT_URI:-http://localhost:8000/api/v1/auth/callback}
+      - TOKEN_URL=${TOKEN_URL:-https://myanimelist.net/v1/oauth2/token}
+      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:-animind_secret_key_2026}
+      - DEFAULT_MAL_USER=${DEFAULT_MAL_USER:-MFrate}
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+  catalog_extractor:
+    build:
+      context: .
+      dockerfile: Dockerfile.catalog_extractor
+    container_name: animind-catalog-extractor
+    restart: on-failure
+    environment:
+      - CLIENT_ID=${CLIENT_ID}
+    volumes:
+      - .:/app
+
+
+  rss_trigger:
+    build:
+      context: .
+      dockerfile: Dockerfile.rss_trigger
+    container_name: animind-rss-trigger
+    restart: always
+    environment:
+      - API_BASE_URL=${API_BASE_URL:-http://api:8000/api/v1}
+      - RSS_TRIGGER_INTERVAL=${RSS_TRIGGER_INTERVAL:-15}
+    depends_on:
+      - api
+    volumes:
+      - .:/app
+
+  relation_collector:
+    build:
+      context: .
+      dockerfile: Dockerfile.relation_collector
+    container_name: animind-relation-collector
+    restart: on-failure
+    environment:
+      - API_BASE_URL=${API_BASE_URL:-http://api:8000/api/v1}
+      - CLIENT_ID=${CLIENT_ID}
+    volumes:
+      - .:/app
+
+  spark_features:
+    build:
+      context: .
+      dockerfile: Dockerfile.spark_etl
+    container_name: animind-spark-features
+    restart: "no"
+    volumes:
+      - .:/app
+
+volumes:
+  postgres_data:

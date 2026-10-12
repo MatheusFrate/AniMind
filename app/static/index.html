@@ -1,0 +1,2339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AniMind — Plataforma de Dados de Animes</title>
+  <meta name="description" content="Plataforma de analytics de animes: visualize métricas, gráficos, progresso e estatísticas do seu perfil MyAnimeList.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --card-bg: #141b2d;
+      --card-border: #1e293b;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-cyan: #06b6d4;
+      --accent: #8b5cf6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ─────────────────────────────────── */
+    header {
+      background: rgba(20, 27, 45, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 0.75rem;
+      font-size: 1.5rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      cursor: pointer; text-decoration: none;
+    }
+
+    .logo-badge {
+      font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 20px;
+      background: rgba(139, 92, 246, 0.15); border: 1px solid var(--accent-purple);
+      color: var(--accent-purple); -webkit-text-fill-color: initial;
+    }
+
+    .header-search {
+      display: flex; gap: 0.5rem;
+      background: var(--bg-dark); padding: 0.35rem 0.5rem;
+      border-radius: 12px; border: 1px solid var(--card-border); width: 360px;
+    }
+
+    .header-search input {
+      background: transparent; border: none; outline: none;
+      color: var(--text-main); padding: 0.4rem 0.6rem; width: 100%; font-size: 0.95rem;
+    }
+
+    /* ── Buttons ─────────────────────────────────── */
+    .btn {
+      background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
+      color: white; border: none; padding: 0.55rem 1.2rem; border-radius: 8px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+      display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(139,92,246,0.3); }
+    .btn-secondary { background: var(--card-border); color: var(--text-main); }
+    .btn-secondary:hover { background: #334155; box-shadow: none; }
+
+    /* ── Container ─────────────────────────────── */
+    .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; flex: 1; width: 100%; }
+
+    /* ── Hero ──────────────────────────────────── */
+    .hero-section { text-align: center; padding: 4rem 1rem 3rem; max-width: 800px; margin: 0 auto; }
+    .hero-title {
+      font-size: 3rem; font-weight: 800; line-height: 1.15; margin-bottom: 1.2rem;
+      background: linear-gradient(135deg, #ffffff, #cbd5e1);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-title span {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle { font-size: 1.15rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.6; }
+    .hero-search-card {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px;
+      padding: 1rem; display: flex; gap: 0.75rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4); margin-bottom: 3.5rem;
+    }
+    .hero-search-card input {
+      background: var(--bg-dark); border: 1px solid var(--card-border); border-radius: 10px;
+      color: white; padding: 0.8rem 1.2rem; font-size: 1.05rem; flex: 1; outline: none;
+    }
+    .hero-search-card input:focus { border-color: var(--accent-purple); }
+
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+    .feature-card {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px;
+      padding: 1.5rem; text-align: left; transition: transform 0.2s ease;
+    }
+    .feature-card:hover { transform: translateY(-4px); }
+    .feature-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .feature-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .feature-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── Profile Dashboard ───────────────────── */
+    .profile-dashboard { display: none; }
+    .profile-header {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px;
+      padding: 1.5rem 2rem; margin-bottom: 2rem;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .user-info { display: flex; align-items: center; gap: 1.2rem; }
+    .user-avatar {
+      width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+      border: 2px solid var(--accent-purple); background: var(--bg-dark);
+    }
+    .user-name { font-size: 1.6rem; font-weight: 800; text-transform: capitalize; }
+    .user-subtext { font-size: 0.85rem; color: var(--text-muted); }
+    .action-buttons { display: flex; gap: 0.75rem; }
+
+    /* ── KPIs ────────────────────────────────── */
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem; margin-bottom: 2rem;
+    }
+    .kpi-card {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px;
+      padding: 1.25rem; position: relative; overflow: hidden;
+    }
+    .kpi-card::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+      background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink));
+    }
+    .kpi-title { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-value { font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
+
+    /* ── Charts grid ─────────────────────────── */
+    .dashboard-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;
+    }
+    .dashboard-grid-wide {
+      display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem;
+    }
+    .dashboard-grid-3 {
+      display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;
+    }
+    @media (max-width: 1100px) {
+      .dashboard-grid, .dashboard-grid-3 { grid-template-columns: 1fr; }
+    }
+
+    .chart-card {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem;
+    }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+    .card-title { font-size: 1.05rem; font-weight: 700; }
+    .card-subtitle { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* ── RSS Feed ────────────────────────────── */
+    .rss-container {
+      display: flex; flex-direction: column; gap: 0.75rem;
+      max-height: 340px; overflow-y: auto; padding-right: 0.5rem;
+    }
+    .rss-item {
+      background: var(--bg-dark); border: 1px solid var(--card-border); border-radius: 10px;
+      padding: 0.85rem; transition: border-color 0.2s ease;
+    }
+    .rss-item:hover { border-color: var(--accent-purple); }
+    .rss-item-title { font-size: 0.88rem; font-weight: 600; color: var(--text-main); text-decoration: none; display: block; margin-bottom: 0.3rem; }
+    .rss-item-title:hover { color: var(--accent-pink); }
+    .rss-item-date { font-size: 0.72rem; color: var(--text-muted); }
+
+    /* ── Library ─────────────────────────────── */
+    .table-card {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem;
+    }
+
+    .library-controls {
+      display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-bottom: 1.2rem;
+    }
+
+    .library-search {
+      background: var(--bg-dark); border: 1px solid var(--card-border); color: white;
+      padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.85rem; outline: none;
+      flex: 1; min-width: 180px;
+    }
+    .library-search:focus { border-color: var(--accent-purple); }
+
+    .sort-select {
+      background: var(--bg-dark); border: 1px solid var(--card-border); color: var(--text-muted);
+      padding: 0.45rem 0.8rem; border-radius: 8px; font-size: 0.82rem; cursor: pointer; outline: none;
+      font-family: 'Outfit', sans-serif;
+    }
+    .sort-select:focus { border-color: var(--accent-purple); color: white; }
+
+    .sort-dir-btn {
+      background: var(--bg-dark); border: 1px solid var(--card-border); color: var(--text-muted);
+      padding: 0.45rem 0.75rem; border-radius: 8px; font-size: 0.9rem; cursor: pointer;
+      transition: all 0.2s ease; line-height: 1;
+    }
+    .sort-dir-btn:hover { border-color: var(--accent-purple); color: white; }
+
+    .filters-row { display: flex; gap: 0.65rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+    .filter-btn {
+      background: var(--bg-dark); border: 1px solid var(--card-border); color: var(--text-muted);
+      padding: 0.38rem 0.85rem; border-radius: 20px; font-size: 0.82rem; cursor: pointer; transition: all 0.2s ease;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--accent-purple); color: white; border-color: var(--accent-purple);
+    }
+
+    /* ── Anime Flip Cards ────────────────────── */
+    .anime-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 1.1rem; }
+
+    .flip-card {
+      height: 340px;
+      perspective: 1000px;
+      cursor: pointer;
+      position: relative;
+      z-index: 0;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%; height: 100%;
+      transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .flip-card.flipped {
+      z-index: 10;
+    }
+
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front,
+    .flip-card-back {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      border-radius: 12px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border: 1px solid var(--card-border);
+    }
+
+    .flip-card-front {
+      background: var(--bg-dark);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+    .flip-card:hover .flip-card-front { border-color: var(--accent-purple); }
+
+    .flip-card-back {
+      background: var(--card-bg);
+      transform: rotateY(180deg);
+      display: flex; flex-direction: column;
+      padding: 1.1rem 1rem 0.75rem;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-purple) transparent;
+    }
+    .flip-card-back::-webkit-scrollbar { width: 4px; }
+    .flip-card-back::-webkit-scrollbar-thumb { background: var(--accent-purple); border-radius: 2px; }
+    .flip-card-back::-webkit-scrollbar-track { background: transparent; }
+
+    .anime-poster { width: 100%; height: 240px; object-fit: cover; background: #1e293b; flex-shrink: 0; }
+
+    .anime-info {
+      padding: 0.75rem 0.85rem;
+      display: flex; flex-direction: column; flex: 1;
+    }
+    .anime-title {
+      font-size: 0.88rem; font-weight: 700; margin-bottom: 0.4rem; line-height: 1.3;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .anime-meta {
+      font-size: 0.77rem; color: var(--text-muted); margin-top: auto;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .badge-score {
+      background: rgba(245,158,11,0.15); color: var(--warning);
+      padding: 0.15rem 0.45rem; border-radius: 6px; font-weight: 700;
+    }
+    .badge-rewatch {
+      margin-top: 0.4rem; font-size: 0.68rem; color: #f59e0b; font-weight: 600;
+      background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2);
+      border-radius: 4px; padding: 0.15rem 0.4rem; display: inline-block;
+    }
+
+    /* Flip back content */
+    .flip-back-title {
+      font-size: 0.9rem; font-weight: 800; line-height: 1.3;
+      margin-bottom: 0.9rem; color: var(--text-main);
+    }
+    .flip-back-row {
+      display: flex; align-items: flex-start; gap: 0.5rem;
+      font-size: 0.78rem; margin-bottom: 0.6rem; color: var(--text-muted);
+    }
+    .flip-back-row strong { color: var(--text-main); }
+    .flip-back-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 0.05rem; }
+    .flip-back-badge {
+      display: inline-block; font-size: 0.68rem; font-weight: 700;
+      padding: 0.2rem 0.55rem; border-radius: 20px; margin-top: 0.5rem;
+    }
+    .flip-back-hint {
+      margin-top: auto; font-size: 0.68rem; color: rgba(148,163,184,0.5);
+      text-align: center; padding-top: 0.5rem;
+    }
+
+    .library-count {
+      font-size: 0.78rem; color: var(--text-muted); margin-left: auto; white-space: nowrap;
+    }
+
+    /* ── Tab Navigation ──────────────────────── */
+    .tab-nav {
+      display: flex; gap: 0; margin-bottom: 2rem;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 14px; padding: 0.4rem; width: fit-content;
+    }
+    .tab-btn {
+      background: transparent; border: none; color: var(--text-muted);
+      padding: 0.55rem 1.4rem; border-radius: 10px; font-size: 0.9rem;
+      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+      font-family: 'Outfit', sans-serif;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
+      color: white; box-shadow: 0 2px 10px rgba(139,92,246,0.35);
+    }
+    .tab-btn:not(.active):hover { color: var(--text-main); background: rgba(255,255,255,0.05); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Heatmap ─────────────────────────────── */
+    .heatmap-wrap { overflow-x: auto; padding-bottom: 0.5rem; }
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: 60px repeat(12, 1fr);
+      gap: 5px;
+      min-width: 680px;
+    }
+    .heatmap-label-year {
+      font-size: 0.8rem; font-weight: 700; color: var(--text-muted);
+      display: flex; align-items: center;
+    }
+    .heatmap-label-month {
+      font-size: 0.72rem; color: var(--text-muted); text-align: center; padding-bottom: 2px;
+    }
+    .heatmap-cell {
+      height: 36px; border-radius: 7px; cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700; color: transparent;
+    }
+    .heatmap-cell:hover {
+      transform: scale(1.12);
+      box-shadow: 0 0 0 2px var(--accent-purple);
+      color: white;
+    }
+    .heatmap-cell.level-0 { background: rgba(255,255,255,0.04); cursor: default; }
+    .heatmap-cell.level-0:hover { transform: none; box-shadow: none; color: transparent; }
+    .heatmap-cell.level-1 { background: rgba(139,92,246,0.2); }
+    .heatmap-cell.level-2 { background: rgba(139,92,246,0.42); }
+    .heatmap-cell.level-3 { background: rgba(139,92,246,0.65); }
+    .heatmap-cell.level-4 { background: rgba(139,92,246,0.88); }
+    .heatmap-cell.level-5 { background: #8b5cf6; }
+
+    .heatmap-legend {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.75rem; color: var(--text-muted); margin-top: 1.2rem;
+    }
+    .heatmap-legend-cell {
+      width: 18px; height: 18px; border-radius: 4px;
+    }
+
+    /* ── Heatmap Detail Panel ────────────────── */
+    .heatmap-detail {
+      margin-top: 1.5rem; padding: 1.25rem 1.5rem;
+      background: var(--bg-dark); border: 1px solid var(--card-border);
+      border-radius: 14px; display: none;
+      animation: fadeIn 0.2s ease;
+    }
+    .heatmap-detail.visible { display: block; }
+    .heatmap-detail-title {
+      font-size: 1rem; font-weight: 700; margin-bottom: 1rem;
+      color: var(--accent-purple);
+    }
+    .heatmap-anime-list {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.6rem;
+    }
+    .heatmap-anime-item {
+      display: flex; align-items: center; gap: 0.65rem;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 10px; padding: 0.55rem 0.8rem;
+      font-size: 0.82rem;
+    }
+    .heatmap-anime-item img {
+      width: 34px; height: 48px; border-radius: 5px; object-fit: cover;
+      background: #1e293b; flex-shrink: 0;
+    }
+    .heatmap-anime-item-title {
+      font-weight: 600; line-height: 1.3;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .heatmap-anime-item-score {
+      font-size: 0.72rem; color: var(--warning); margin-top: 0.2rem;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    /* ── Compare Panel ───────────────────────── */
+    .compare-search-bar {
+      display: flex; gap: 0.75rem; align-items: center;
+      background: var(--bg-dark); border: 1px solid var(--card-border);
+      border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 2rem;
+    }
+    .compare-search-bar input {
+      flex: 1; background: var(--card-bg); border: 1px solid var(--card-border);
+      color: white; padding: 0.65rem 1rem; border-radius: 10px;
+      font-size: 0.95rem; outline: none; font-family: 'Outfit', sans-serif;
+    }
+    .compare-search-bar input:focus { border-color: var(--accent-purple); }
+    .compare-search-bar label {
+      font-size: 0.85rem; color: var(--text-muted); white-space: nowrap;
+    }
+
+    /* Compatibility Hero */
+    .compare-hero {
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      gap: 1.5rem; align-items: center; margin-bottom: 2rem;
+    }
+    .compare-user-card {
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 1.5rem; text-align: center;
+    }
+    .compare-user-card img {
+      width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+      border: 3px solid var(--accent-purple); margin-bottom: 0.75rem;
+    }
+    .compare-user-card .name {
+      font-size: 1.2rem; font-weight: 800;
+    }
+    .compare-user-card .sub {
+      font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;
+    }
+    .compare-badge-wrap { text-align: center; }
+    .compare-badge {
+      display: inline-flex; flex-direction: column; align-items: center;
+      justify-content: center; width: 120px; height: 120px;
+      border-radius: 50%; font-weight: 800;
+      border: 4px solid; position: relative;
+    }
+    .compare-badge.high  { border-color: #10b981; background: rgba(16,185,129,0.1); color: #10b981; }
+    .compare-badge.mid   { border-color: #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; }
+    .compare-badge.low   { border-color: #ef4444; background: rgba(239,68,68,0.1);  color: #ef4444; }
+    .compare-badge.none  { border-color: var(--card-border); background: transparent; color: var(--text-muted); }
+    .compare-badge .pct  { font-size: 1.8rem; line-height: 1; }
+    .compare-badge .lbl  { font-size: 0.65rem; font-weight: 600; margin-top: 0.2rem; opacity: 0.8; text-transform: uppercase; }
+    .compare-badge .shared-info { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem; }
+    .compare-badge-note { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.75rem; max-width: 140px; }
+
+    /* KPI compare grid */
+    .compare-kpi-grid {
+      display: grid; grid-template-columns: 1fr auto 1fr; gap: 0;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 16px; overflow: hidden; margin-bottom: 2rem;
+    }
+    .compare-kpi-row {
+      display: contents;
+    }
+    .compare-kpi-val {
+      padding: 0.9rem 1.2rem; text-align: center;
+      border-bottom: 1px solid var(--card-border);
+      font-size: 1.2rem; font-weight: 800;
+    }
+    .compare-kpi-val:last-child { border-bottom: none; }
+    .compare-kpi-label {
+      padding: 0.9rem 0.5rem; text-align: center;
+      border-bottom: 1px solid var(--card-border);
+      font-size: 0.72rem; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.4px; background: var(--bg-dark);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .compare-kpi-label:last-child { border-bottom: none; }
+    .compare-kpi-val.winner { color: var(--accent-purple); }
+
+    /* Shared animes grid */
+    .shared-filter-row { display: flex; gap: 0.6rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+    .shared-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0.75rem;
+    }
+    .shared-card {
+      display: flex; gap: 0.75rem; align-items: center;
+      background: var(--bg-dark); border: 1px solid var(--card-border);
+      border-radius: 12px; padding: 0.75rem;
+      transition: border-color 0.2s ease;
+    }
+    .shared-card:hover { border-color: var(--accent-purple); }
+    .shared-card img {
+      width: 40px; height: 56px; object-fit: cover;
+      border-radius: 6px; flex-shrink: 0; background: #1e293b;
+    }
+    .shared-card-info { flex: 1; min-width: 0; }
+    .shared-card-title {
+      font-size: 0.82rem; font-weight: 700; line-height: 1.3; margin-bottom: 0.3rem;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .shared-scores {
+      display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem;
+    }
+    .score-chip {
+      padding: 0.1rem 0.45rem; border-radius: 5px; font-weight: 700;
+      background: rgba(139,92,246,0.15); color: var(--accent-purple);
+    }
+    .score-chip.pink { background: rgba(236,72,153,0.15); color: #ec4899; }
+    .diff-chip {
+      padding: 0.1rem 0.4rem; border-radius: 5px; font-size: 0.7rem; font-weight: 700;
+    }
+    .diff-chip.agree  { background: rgba(16,185,129,0.15); color: #10b981; }
+    .diff-chip.small  { background: rgba(245,158,11,0.12); color: #f59e0b; }
+    .diff-chip.big    { background: rgba(239,68,68,0.12);  color: #ef4444; }
+
+    /* Rec cards */
+    .rec-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.9rem;
+    }
+    .rec-card {
+      background: var(--bg-dark); border: 1px solid var(--card-border);
+      border-radius: 12px; overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .rec-card:hover { transform: translateY(-3px); border-color: var(--accent-purple); }
+    .rec-card img { width: 100%; height: 200px; object-fit: cover; background: #1e293b; }
+    .rec-card-info { padding: 0.65rem 0.75rem; }
+    .rec-card-title {
+      font-size: 0.8rem; font-weight: 700; line-height: 1.3; margin-bottom: 0.3rem;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .rec-card-score { font-size: 0.72rem; color: var(--warning); }
+
+    /* Compare loading / error */
+    .compare-state {
+      text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.95rem;
+    }
+    .compare-state .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+    @media (max-width: 900px) {
+      .compare-hero { grid-template-columns: 1fr; }
+      .compare-kpi-grid { display: block; }
+    }
+
+    /* ── Insight Cards ────────────────────────── */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .insight-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 1.1rem 1.3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .insight-card:hover { border-color: var(--accent-purple); transform: translateY(-2px); }
+    .insight-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--insight-accent, var(--accent-purple));
+      border-radius: 14px 14px 0 0;
+    }
+    .insight-icon { font-size: 1.4rem; line-height: 1; margin-bottom: 0.1rem; }
+    .insight-label {
+      font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-muted);
+    }
+    .insight-value {
+      font-size: 1.35rem; font-weight: 800; color: var(--text-main); line-height: 1.1;
+    }
+    .insight-sub {
+      font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem;
+    }
+
+    /* ── Sequels Tab ─────────────────────────── */
+    .sequels-filters {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;
+    }
+    .sequel-chip {
+      padding: 0.45rem 1rem; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+      background: var(--bg-dark); border: 1px solid var(--card-border);
+      color: var(--text-muted); cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .sequel-chip:hover { border-color: var(--accent-purple); color: var(--text-main); }
+    .sequel-chip.active {
+      background: rgba(139,92,246,0.15); border-color: var(--accent-purple);
+      color: var(--accent-purple);
+    }
+    .sequels-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1rem;
+    }
+    .sequel-card {
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 14px; overflow: hidden; display: flex; gap: 0;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .sequel-card:hover { transform: translateY(-2px); border-color: var(--accent-purple); }
+    .sequel-covers {
+      display: flex; align-items: center; flex-shrink: 0;
+      padding: 0.75rem 0 0.75rem 0.75rem; gap: 0;
+    }
+    .sequel-cover {
+      width: 54px; height: 76px; object-fit: cover;
+      border-radius: 8px; background: #1e293b; flex-shrink: 0;
+    }
+    .sequel-arrow {
+      font-size: 1rem; color: var(--accent-purple); padding: 0 0.35rem;
+      font-weight: 900; flex-shrink: 0;
+    }
+    .sequel-info {
+      flex: 1; padding: 0.75rem 0.85rem; min-width: 0;
+      display: flex; flex-direction: column; justify-content: center; gap: 0.3rem;
+    }
+    .sequel-type-badge {
+      font-size: 0.66rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; padding: 0.15rem 0.55rem;
+      border-radius: 20px; display: inline-block; width: fit-content;
+    }
+    .sequel-type-sequel        { background: rgba(16,185,129,0.15); color: #10b981; }
+    .sequel-type-prequel       { background: rgba(59,130,246,0.15); color: #3b82f6; }
+    .sequel-type-side_story    { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .sequel-type-parent_story  { background: rgba(249,115,22,0.15); color: #f97316; }
+    .sequel-type-alternative_setting  { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+    .sequel-type-alternative_version  { background: rgba(168,85,247,0.15); color: #a855f7; }
+    .sequel-type-summary       { background: rgba(100,116,139,0.15); color: #94a3b8; }
+    .sequel-type-full_story    { background: rgba(236,72,153,0.15); color: #ec4899; }
+    .sequel-related-title {
+      font-size: 0.88rem; font-weight: 700; line-height: 1.3;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .sequel-source-label {
+      font-size: 0.7rem; color: var(--text-muted); line-height: 1.2;
+      display: -webkit-box; -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .sequel-meta {
+      display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;
+    }
+    .sequel-meta-chip {
+      font-size: 0.68rem; font-weight: 600; padding: 0.12rem 0.45rem;
+      border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--text-muted);
+    }
+    .sequel-meta-chip.score { background: rgba(245,158,11,0.12); color: var(--warning); }
+    .sequel-mal-link {
+      font-size: 0.7rem; color: var(--accent-purple); text-decoration: none;
+      font-weight: 600; transition: opacity 0.15s;
+    }
+    .sequel-mal-link:hover { opacity: 0.75; }
+    .sequels-empty {
+      color: var(--text-muted); text-align: center; padding: 3rem;
+      font-size: 0.95rem; grid-column: 1/-1;
+    }
+    .sequels-loading {
+      color: var(--text-muted); text-align: center; padding: 3rem;
+      font-size: 0.95rem; grid-column: 1/-1;
+    }
+
+    /* ── Misc ────────────────────────────────── */
+    .loader {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3); border-radius: 50%;
+      border-top-color: white; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <a href="#" class="logo" onclick="resetToHome()">
+      AniMind <span class="logo-badge">DATA PLATFORM</span>
+    </a>
+    <div class="header-search" id="headerSearch" style="display: none;">
+      <input type="text" id="headerSearchInput" placeholder="Buscar perfil do MAL..." onkeydown="handleHeaderSearch(event)">
+      <button class="btn" onclick="executeSearch(document.getElementById('headerSearchInput').value)">Buscar</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- LANDING / HERO VIEW -->
+    <div id="landingView" class="hero-section">
+      <h1 class="hero-title">Plataforma de Dados &amp; <span>Analytics de Animes</span></h1>
+      <p class="hero-subtitle">Consulte métricas, estatísticas de progresso e feeds em tempo real do seu grupo de amigos no MyAnimeList.</p>
+
+      <div class="hero-search-card">
+        <input type="text" id="heroSearchInput" placeholder="Digite o nome de usuário do MyAnimeList (ex: MFrate)..." onkeydown="handleHeroSearch(event)">
+        <button class="btn" style="padding: 0.8rem 1.8rem; font-size: 1rem;" onclick="executeSearch(document.getElementById('heroSearchInput').value)">
+          Consultar Perfil
+        </button>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <div class="feature-title">Consulta Pública</div>
+          <div class="feature-desc">Basta informar o nome de usuário do MAL para visualizar estatísticas completas e a biblioteca.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚙️</div>
+          <div class="feature-title">ETL Contínuo</div>
+          <div class="feature-desc">Worker em segundo plano coletando e atualizando automaticamente episódios assistidos a cada 15 min.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <div class="feature-title">Analytics &amp; Métricas</div>
+          <div class="feature-desc">Gráficos de linha do tempo, distribuição por status, notas e estúdios favoritos.</div>
+        </div>
+      </div>
+
+      <!-- Admin: Login OAuth -->
+      <div id="authBanner" style="display:none; margin-top: 2rem; padding: 1rem 1.5rem; background: rgba(255,180,0,0.08); border: 1px solid rgba(255,180,0,0.25); border-radius: 12px; text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+        ⚠️ <strong style="color: #f0c040;">Admin:</strong> O sistema ainda não está autorizado com o MyAnimeList.
+        <a href="/api/v1/login" style="color: var(--accent); font-weight: 600; margin-left: 0.5rem; text-decoration: none;">Clique aqui para autorizar uma única vez →</a>
+      </div>
+    </div>
+
+    <!-- PROFILE DASHBOARD VIEW -->
+    <div id="profileView" class="profile-dashboard">
+
+      <!-- Profile Header -->
+      <div class="profile-header">
+        <div class="user-info">
+          <img src="" id="userAvatar" class="user-avatar" alt="Avatar">
+          <div>
+            <div class="user-name" id="userNameTitle">-</div>
+            <div class="user-subtext" id="userSubtext">Perfil monitorado na plataforma</div>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button class="btn" id="syncBtn" onclick="syncUserAPI()">
+            <span id="syncBtnText">🔄 Sincronizar via API</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-title">Total de Animes</div>
+          <div class="kpi-value" id="kpiTotal">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Episódios Assistidos</div>
+          <div class="kpi-value" id="kpiEpisodes">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Tempo Estimado (Dias)</div>
+          <div class="kpi-value" id="kpiDays">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Animes Reassistidos</div>
+          <div class="kpi-value" id="kpiRewatched">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Nota Média do Usuário</div>
+          <div class="kpi-value" id="kpiMeanScore">0.0</div>
+        </div>
+      </div>
+
+      <!-- Tab Navigation & Year Filter -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div class="tab-nav" style="margin-bottom: 0;">
+          <button class="tab-btn active" id="tab-overview" onclick="switchTab('overview')">📊 Visão Geral</button>
+          <button class="tab-btn" id="tab-heatmap" onclick="switchTab('heatmap')">🗓️ Heatmap</button>
+          <button class="tab-btn" id="tab-compare" onclick="switchTab('compare')">⚔️ Comparar Perfis</button>
+          <button class="tab-btn" id="tab-sequels" onclick="switchTab('sequels')">🔗 Continuações</button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.6rem; background: var(--card-bg); border: 1px solid var(--card-border); padding: 0.4rem 0.85rem; border-radius: 12px; font-size: 0.82rem;">
+          <span style="color: var(--text-muted); font-weight: 600;">📅 Exibir a partir de:</span>
+          <select id="startYearFilter" class="sort-select" style="padding: 0.35rem 0.6rem; font-size: 0.82rem; margin: 0; background: var(--bg-dark);" onchange="applyYearFilter()">
+            <option value="2017" selected>2017 (Recomendado)</option>
+            <option value="2015">2015</option>
+            <option value="2018">2018</option>
+            <option value="2020">2020</option>
+            <option value="0">Todos os Anos</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TAB: Overview -->
+      <div class="tab-panel active" id="panel-overview">
+
+      <!-- Row 1: Status + Score + Feed -->
+      <div class="dashboard-grid-3">
+        <div class="chart-card">
+          <div class="card-header">
+            <div class="card-title">Distribuição por Status</div>
+          </div>
+          <div style="height: 260px;">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="card-header">
+            <div class="card-title">Distribuição de Notas</div>
+            <span class="card-subtitle" id="scoreChartSubtitle"></span>
+          </div>
+          <div style="height: 260px;">
+            <canvas id="scoreChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="card-header">
+            <div class="card-title">Feed de Atividades</div>
+            <span style="font-size: 0.75rem; color: var(--text-muted);" id="rssCount">0 itens</span>
+          </div>
+          <div class="rss-container" id="rssContainer">
+            <div style="color: var(--text-muted); font-size: 0.85rem;">Nenhuma atividade recente.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Timeline de completados -->
+      <div class="dashboard-grid-wide">
+        <div class="chart-card">
+          <div class="card-header">
+            <div class="card-title">📅 Linha do Tempo — Animes Completados por Mês</div>
+            <span class="card-subtitle" id="timelineSubtitle"></span>
+          </div>
+          <div style="height: 240px;">
+            <canvas id="timelineChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: Top Estúdios -->
+      <div class="dashboard-grid">
+        <div class="chart-card">
+          <div class="card-header">
+            <div class="card-title">🏆 Top Estúdios</div>
+          </div>
+          <div style="height: 220px;">
+            <canvas id="studiosChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="card-header">
+            <div class="card-title">🎬 Distribuição por Tipo de Mídia</div>
+          </div>
+          <div style="height: 220px;">
+            <canvas id="mediaTypeChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4: Insights Cards -->
+      <div class="chart-card" style="margin-bottom:0;">
+        <div class="card-header">
+          <div class="card-title">⚡ Insights Pessoais</div>
+          <span class="card-subtitle">calculado da sua lista</span>
+        </div>
+        <div class="insights-grid" id="insightsGrid">
+          <div style="color:var(--text-muted);font-size:.85rem;">Sincronize sua lista para ver os insights.</div>
+        </div>
+      </div>
+
+      </div><!-- /panel-overview -->
+
+
+      <!-- TAB: Heatmap -->
+      <div class="tab-panel" id="panel-heatmap">
+        <div class="chart-card">
+          <div class="card-header">
+            <div class="card-title">🗓️ Heatmap de Atividade — Animes Concluídos</div>
+            <span class="card-subtitle" id="heatmapSubtitle"></span>
+          </div>
+
+          <!-- Month labels row -->
+          <div class="heatmap-wrap" id="heatmapWrap">
+            <div style="color:var(--text-muted);font-size:.85rem;">Sincronize sua lista para visualizar o heatmap.</div>
+          </div>
+
+          <!-- Legend -->
+          <div class="heatmap-legend">
+            <span>Menos</span>
+            <div class="heatmap-legend-cell" style="background:rgba(255,255,255,0.04);"></div>
+            <div class="heatmap-legend-cell" style="background:rgba(139,92,246,0.2);"></div>
+            <div class="heatmap-legend-cell" style="background:rgba(139,92,246,0.45);"></div>
+            <div class="heatmap-legend-cell" style="background:rgba(139,92,246,0.7);"></div>
+            <div class="heatmap-legend-cell" style="background:#8b5cf6;"></div>
+            <span>Mais</span>
+          </div>
+
+          <!-- Detail panel on click -->
+          <div class="heatmap-detail" id="heatmapDetail">
+            <div class="heatmap-detail-title" id="heatmapDetailTitle"></div>
+            <div class="heatmap-anime-list" id="heatmapAnimeList"></div>
+          </div>
+        </div>
+      </div><!-- /panel-heatmap -->
+
+      <!-- TAB: Compare -->
+      <div class="tab-panel" id="panel-compare">
+
+        <!-- Search bar -->
+        <div class="compare-search-bar">
+          <label>⚔️ Comparando <strong id="compareUser1Label" style="color:var(--accent-purple);">—</strong> com:</label>
+          <input type="text" id="compareUser2Input" placeholder="Username do 2º perfil (ex: Scarsod)" onkeydown="if(event.key==='Enter') runCompare()">
+          <button class="btn" onclick="runCompare()" id="compareBtnEl">
+            <span id="compareBtnText">Comparar</span>
+          </button>
+        </div>
+
+        <!-- Result area -->
+        <div id="compareResult">
+          <div class="compare-state">
+            <div class="icon">⚔️</div>
+            <div>Digite o username de um amigo e clique em <strong>Comparar</strong> para ver o comparativo.</div>
+          </div>
+        </div>
+
+      </div><!-- /panel-compare -->
+
+      <!-- TAB: Continuações Pendentes -->
+      <div class="tab-panel" id="panel-sequels">
+
+        <div class="chart-card" style="margin-bottom: 1.5rem;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🔗 Continuações Não Assistidas</div>
+              <div class="card-subtitle" style="margin-top:0.25rem;">Animes relacionados à sua lista que você ainda não viu</div>
+            </div>
+            <span class="library-count" id="sequelsCount"></span>
+          </div>
+
+          <!-- Filter chips -->
+          <div class="sequels-filters" id="sequelsFilters">
+            <button class="sequel-chip active" data-types="" onclick="setSequelFilter(this)">Todos</button>
+            <button class="sequel-chip" data-types="sequel,prequel" onclick="setSequelFilter(this)">🔄 Sequências / Prequelas</button>
+            <button class="sequel-chip" data-types="side_story,parent_story" onclick="setSequelFilter(this)">📖 Side / Parent Stories</button>
+            <button class="sequel-chip" data-types="alternative_setting,alternative_version" onclick="setSequelFilter(this)">🌀 Alternativos</button>
+            <button class="sequel-chip" data-types="summary,full_story" onclick="setSequelFilter(this)">📋 Resumos / Completos</button>
+          </div>
+        </div>
+
+        <!-- Cards grid -->
+        <div id="sequelsGrid" class="sequels-grid">
+          <div class="sequels-empty">Carregue um perfil para ver as continuações pendentes.</div>
+        </div>
+
+      </div><!-- /panel-sequels -->
+
+      <!-- 🤖 IA Recommendations -->
+      <div class="table-card" style="margin-bottom: 2rem; border-color: var(--accent-purple); box-shadow: 0 0 20px rgba(139,92,246,0.15);">
+        <div class="card-header">
+          <div class="card-title">🤖 Descobertas e Recomendações (IA)</div>
+          <span class="card-subtitle">Universos novos calculados com base no seu gosto!</span>
+        </div>
+        <div id="iaLoader" style="color:var(--text-muted);font-size:0.9rem;display:none;">Calculando afinidades...</div>
+        <div id="iaError" style="color:#ef4444;font-size:0.9rem;display:none;"></div>
+        <div id="iaRecsGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:1.5rem;"></div>
+      </div>
+
+      <!-- Anime Library -->
+      <div class="table-card">
+        <div class="card-header">
+          <div class="card-title">Biblioteca de Animes</div>
+          <span class="library-count" id="libraryCount"></span>
+        </div>
+
+        <!-- Search + Sort Controls -->
+        <div class="library-controls">
+          <input type="text" id="filterTitle" class="library-search" placeholder="🔍 Buscar por título..." oninput="renderAnimeGrid()">
+          <select id="sortField" class="sort-select" onchange="renderAnimeGrid()">
+            <option value="title">Ordenar: Título A→Z</option>
+            <option value="score">Ordenar: Nota</option>
+            <option value="episodes">Ordenar: Episódios</option>
+            <option value="finish_date">Ordenar: Data de Conclusão</option>
+            <option value="global_mean">Ordenar: Nota Global MAL</option>
+          </select>
+          <button class="sort-dir-btn" id="sortDirBtn" onclick="toggleSortDir()" title="Inverter ordenação">↓</button>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="filters-row">
+          <button class="filter-btn active" onclick="setFilter('all', this)">Todos</button>
+          <button class="filter-btn" onclick="setFilter('watching', this)">Assistindo</button>
+          <button class="filter-btn" onclick="setFilter('completed', this)">Completados</button>
+          <button class="filter-btn" onclick="setFilter('on_hold', this)">Em Pausa</button>
+          <button class="filter-btn" onclick="setFilter('dropped', this)">Desistidos</button>
+          <button class="filter-btn" onclick="setFilter('plan_to_watch', this)">Planeja Assistir</button>
+          <button class="filter-btn" onclick="setFilter('rewatching', this)">🔁 Reassistindo</button>
+        </div>
+
+        <div class="anime-grid" id="animeGrid"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let activeUsername = '';
+    let allAnimeItems = [];
+    let currentStatusFilter = 'all';
+    let sortDir = -1; // -1 = desc, 1 = asc
+    let heatmapData = {}; // key: 'YYYY-MM' => [anime, ...]
+    let allSequelItems = [];   // cache da resposta do endpoint
+    let sequelFilterTypes = ''; // tipos ativos no filtro
+    let sequelsLoaded = false;  // evita refetch desnecessário
+
+
+    // ── Tab system ───────────────────────────────
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      document.getElementById('panel-' + name).classList.add('active');
+      if (name === 'heatmap' && allAnimeItems.length > 0) renderHeatmap(allAnimeItems);
+      if (name === 'sequels' && activeUsername && !sequelsLoaded) loadSequels(activeUsername);
+    }
+
+    // Chart instances
+    let statusChartInst = null;
+    let scoreChartInst = null;
+    let timelineChartInst = null;
+    let studiosChartInst = null;
+    let mediaTypeChartInst = null;
+
+    // ── Boot ────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userParam = urlParams.get('user') || urlParams.get('search') || urlParams.get('u');
+      if (userParam) executeSearch(userParam, false);
+      checkAuthStatus();
+
+      if (urlParams.get('auth') === 'success') {
+        showToast('✅ Sistema autorizado com sucesso!');
+        window.history.replaceState(null, '', window.location.pathname);
+        checkAuthStatus();
+      }
+    });
+
+    async function checkAuthStatus() {
+      try {
+        const res = await fetch('/api/v1/auth/status');
+        const data = await res.json();
+        const banner = document.getElementById('authBanner');
+        if (banner) banner.style.display = data.authenticated ? 'none' : 'block';
+      } catch (e) {}
+    }
+
+    function showToast(message) {
+      const t = document.createElement('div');
+      t.style.cssText = 'position:fixed;bottom:2rem;right:2rem;background:#1a1a2e;border:1px solid var(--accent);color:white;padding:1rem 1.5rem;border-radius:12px;font-size:0.9rem;z-index:9999;max-width:340px;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+      t.innerText = message;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 5000);
+    }
+
+    // ── Navigation ───────────────────────────────
+    window.addEventListener('popstate', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userParam = urlParams.get('user') || urlParams.get('search') || urlParams.get('u');
+      if (userParam) {
+        executeSearch(userParam, false);
+      } else {
+        activeUsername = '';
+        document.getElementById('landingView').style.display = 'block';
+        document.getElementById('profileView').style.display = 'none';
+        document.getElementById('headerSearch').style.display = 'none';
+        document.getElementById('heroSearchInput').value = '';
+      }
+    });
+
+    function resetToHome() {
+      activeUsername = '';
+      if (window.location.search) window.history.pushState(null, '', window.location.pathname);
+      document.getElementById('landingView').style.display = 'block';
+      document.getElementById('profileView').style.display = 'none';
+      document.getElementById('headerSearch').style.display = 'none';
+      document.getElementById('heroSearchInput').value = '';
+    }
+
+    function handleHeroSearch(e) { if (e.key === 'Enter') executeSearch(e.target.value); }
+    function handleHeaderSearch(e) { if (e.key === 'Enter') executeSearch(e.target.value); }
+
+    async function executeSearch(username, updateUrl = true) {
+      if (!username || !username.trim()) return alert('Por favor, informe o username do MyAnimeList.');
+      activeUsername = username.trim().toLowerCase();
+      if (updateUrl) {
+        window.history.pushState({ user: activeUsername }, '', `${window.location.pathname}?user=${encodeURIComponent(activeUsername)}`);
+      }
+      document.getElementById('landingView').style.display = 'none';
+      document.getElementById('profileView').style.display = 'block';
+      document.getElementById('headerSearch').style.display = 'flex';
+      document.getElementById('headerSearchInput').value = activeUsername;
+      await loadProfileData(activeUsername);
+    }
+
+    // ── Profile data ─────────────────────────────
+    async function loadProfileData(username) {
+      try {
+        const response = await fetch(`/api/v1/user/${username}/stats`);
+        if (response.ok) {
+          const data = await response.json();
+          renderProfile(data);
+          loadUserAnimeList(username);
+          loadRSSFeed(username);
+          loadMachineLearningRecommendations(username);
+          
+          // Reseta o cache de continuações para o novo perfil
+          sequelsLoaded = false;
+          allSequelItems = [];
+
+          // Se a aba de continuações estiver aberta no momento, carrega as do novo usuário na hora
+          const sequelsTab = document.getElementById('tab-sequels');
+          if (sequelsTab && sequelsTab.classList.contains('active')) {
+            loadSequels(username, sequelFilterTypes);
+          }
+        } else {
+          allAnimeItems = [];
+          resetDashboard(username);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar perfil:", err);
+      }
+    }
+
+
+    function resetDashboard(username) {
+      document.getElementById('userNameTitle').innerText = username;
+      document.getElementById('userSubtext').innerText = 'Perfil não encontrado no banco local. Clique em Sincronizar via API abaixo.';
+      document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=8b5cf6&color=fff`;
+      ['kpiTotal','kpiEpisodes','kpiDays','kpiRewatched'].forEach(id => document.getElementById(id).innerText = '0');
+      document.getElementById('kpiMeanScore').innerText = '0.0';
+      [statusChartInst, scoreChartInst, timelineChartInst, studiosChartInst, mediaTypeChartInst].forEach(c => { if (c) c.destroy(); });
+      statusChartInst = scoreChartInst = timelineChartInst = studiosChartInst = mediaTypeChartInst = null;
+      document.getElementById('rssCount').innerText = `0 atividades de ${username}`;
+      document.getElementById('rssContainer').innerHTML = `<div style="color:var(--text-muted);font-size:.85rem;">Nenhuma atividade para ${username}.</div>`;
+      document.getElementById('animeGrid').innerHTML = '<div style="color:var(--text-muted);grid-column:1/-1;padding:2rem 0;text-align:center;">Clique em "Sincronizar via API" no topo para importar a biblioteca do MAL!</div>';
+      document.getElementById('libraryCount').innerText = '';
+    }
+
+    function renderProfile(data) {
+      const user = data.user;
+      const stats = data.stats;
+
+      document.getElementById('userNameTitle').innerText = user.name;
+      document.getElementById('userSubtext').innerText = `ID MAL: ${user.id} — Cadastrado na plataforma`;
+
+      const avatarEl = document.getElementById('userAvatar');
+      const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=8b5cf6&color=fff`;
+      avatarEl.src = (user.picture && user.picture.startsWith('http')) ? user.picture : fallback;
+      avatarEl.onerror = () => { avatarEl.src = fallback; };
+
+      document.getElementById('kpiTotal').innerText = stats.total_animes;
+      document.getElementById('kpiEpisodes').innerText = stats.total_episodes_watched;
+      document.getElementById('kpiDays').innerText = stats.total_days_watched;
+      document.getElementById('kpiRewatched').innerText = stats.rewatched_count || 0;
+      document.getElementById('kpiMeanScore').innerText = stats.user_mean_score;
+
+      renderStatusChart(stats.status_distribution);
+
+      if (stats.top_studios && stats.top_studios.length > 0) {
+        renderStudiosChart(stats.top_studios);
+      }
+    }
+
+    // ── Machine Learning Recommendations ──────────
+    async function loadMachineLearningRecommendations(username) {
+      const grid = document.getElementById('iaRecsGrid');
+      const loader = document.getElementById('iaLoader');
+      const errorDiv = document.getElementById('iaError');
+      
+      grid.innerHTML = '';
+      errorDiv.style.display = 'none';
+      loader.style.display = 'block';
+
+      try {
+        const res = await fetch(`/api/v1/recommendations/${username}`);
+        if (!res.ok) {
+          loader.style.display = 'none';
+          if (res.status === 404) {
+            errorDiv.innerText = '⚠️ O Motor de Inteligência Artificial ainda não processou as recomendações para este usuário (aguarde a rotina noturna do Data Lakehouse).';
+          } else {
+            errorDiv.innerText = 'Erro ao buscar recomendações da API.';
+          }
+          errorDiv.style.display = 'block';
+          return;
+        }
+
+        const data = await res.json();
+        loader.style.display = 'none';
+        
+        if (!data.recommendations || data.recommendations.length === 0) {
+            errorDiv.innerText = 'Nenhuma recomendação nova disponível.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        grid.innerHTML = data.recommendations.map(a => `
+          <div style="background:var(--bg-dark);border:1px solid var(--card-border);border-radius:12px;overflow:hidden;position:relative;transition:transform 0.2s;box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+            <div style="position:absolute;top:8px;left:8px;background:rgba(139,92,246,0.9);color:white;padding:2px 8px;border-radius:6px;font-size:0.8rem;font-weight:700;">#${a.rank}</div>
+            <img src="${a.main_picture}" alt="${a.title}" style="width:100%;height:250px;object-fit:cover;" onerror="this.style.background='#1e293b'">
+            <div style="padding:1rem;">
+              <a href="https://myanimelist.net/anime/${a.anime_id}" target="_blank" style="font-weight:600;font-size:0.95rem;margin-bottom:0.4rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:white;text-decoration:none;">${a.title}</a>
+              <div style="color:var(--accent-pink);font-size:0.85rem;font-weight:700;">🔮 Match: ${a.predicted_score}</div>
+              <div style="color:var(--text-muted);font-size:0.75rem;margin-top:0.2rem;">⭐ Média MAL: ${a.global_mal_mean || '-'}</div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        loader.style.display = 'none';
+        errorDiv.innerText = 'Falha na comunicação com o servidor da API.';
+        errorDiv.style.display = 'block';
+      }
+    }
+
+    // ── Animelist ────────────────────────────────
+    async function loadUserAnimeList(username) {
+      try {
+        let response = await fetch(`/api/v1/user/${username}/animelist?limit=5000`);
+        if (!response.ok) {
+          console.warn("Retentando busca de animelist sem limite...");
+          response = await fetch(`/api/v1/user/${username}/animelist`);
+        }
+        if (!response.ok) {
+          console.error("Erro ao carregar animelist:", response.status);
+          return;
+        }
+        const data = await response.json();
+        allAnimeItems = data.items || [];
+        renderAnimeGrid();
+        renderScoreChart(allAnimeItems);
+        renderTimelineChart(allAnimeItems);
+        renderMediaTypeChart(allAnimeItems);
+        renderInsightCards(allAnimeItems);
+        // Reset sequel cache quando o usuário mudar
+        sequelsLoaded = false;
+        allSequelItems = [];
+      } catch (err) {
+        console.error("Erro ao carregar lista de animes:", err);
+      }
+    }
+
+    // ── Continuações Pendentes ────────────────────
+    async function loadSequels(username, types = '') {
+      const grid = document.getElementById('sequelsGrid');
+      const countEl = document.getElementById('sequelsCount');
+      grid.innerHTML = '<div class="sequels-loading">⏳ Carregando continuações...</div>';
+      if (countEl) countEl.textContent = '';
+
+      try {
+        const params = types ? `?relation_types=${encodeURIComponent(types)}` : '';
+        const res = await fetch(`/api/v1/user/${username}/unwatched-sequels${params}`);
+        if (!res.ok) {
+          grid.innerHTML = `<div class="sequels-empty">❌ Erro ao carregar continuações (${res.status}).<br>Verifique se o ETL já coletou dados de relações.</div>`;
+          return;
+        }
+        const data = await res.json();
+        allSequelItems = data.items || [];
+        sequelsLoaded = true;
+        renderSequelsGrid(allSequelItems, countEl);
+      } catch (err) {
+        grid.innerHTML = `<div class="sequels-empty">❌ Erro: ${err.message}</div>`;
+      }
+    }
+
+    function setSequelFilter(btn) {
+      document.querySelectorAll('.sequel-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      sequelFilterTypes = btn.dataset.types || '';
+      // Re-fetch com o filtro (a API filtra server-side)
+      sequelsLoaded = false;
+      loadSequels(activeUsername, sequelFilterTypes);
+    }
+
+    function renderSequelsGrid(items, countEl) {
+      const grid = document.getElementById('sequelsGrid');
+      if (countEl) countEl.textContent = `${items.length} encontradas`;
+
+      if (!items.length) {
+        grid.innerHTML = '<div class="sequels-empty">🎉 Nenhuma continuação pendente para este filtro!<br><span style="font-size:0.8rem;">Os dados de relações são coletados progressivamente pelo ETL.</span></div>';
+        return;
+      }
+
+      const TYPE_COLORS = {
+        sequel: 'sequel', prequel: 'prequel',
+        side_story: 'side_story', parent_story: 'parent_story',
+        alternative_setting: 'alternative_setting',
+        alternative_version: 'alternative_version',
+        summary: 'summary', full_story: 'full_story'
+      };
+
+      grid.innerHTML = items.map(item => {
+        const srcPic = item.source_anime_picture
+          ? `<img class="sequel-cover" src="${item.source_anime_picture}" alt="${item.source_anime_title}" onerror="this.style.background='#1e293b'">`
+          : `<div class="sequel-cover" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🎬</div>`;
+
+        const relPic = item.related_anime_picture
+          ? `<img class="sequel-cover" src="${item.related_anime_picture}" alt="${item.related_anime_title}" onerror="this.style.background='#1e293b'">`
+          : `<div class="sequel-cover" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🎬</div>`;
+
+        const typeClass = `sequel-type-${TYPE_COLORS[item.relation_type] || 'sequel'}`;
+        const score = item.related_anime_mean ? `⭐ ${item.related_anime_mean.toFixed(1)}` : '';
+        const rank  = item.related_anime_rank  ? `#${item.related_anime_rank}` : '';
+        const eps   = item.related_anime_num_episodes ? `${item.related_anime_num_episodes} ep` : '';
+        const media = item.related_anime_media_type || '';
+        const srcScore = item.source_user_score ? ` · você deu ${item.source_user_score}★` : '';
+
+        const metaChips = [score, rank, eps, media].filter(Boolean).map(v =>
+          `<span class="sequel-meta-chip${v.startsWith('⭐') ? ' score' : ''}">${v}</span>`
+        ).join('');
+
+        return `
+          <div class="sequel-card">
+            <div class="sequel-covers">
+              ${srcPic}
+              <span class="sequel-arrow">→</span>
+              ${relPic}
+            </div>
+            <div class="sequel-info">
+              <span class="sequel-type-badge ${typeClass}">${item.relation_type_label}</span>
+              <div class="sequel-related-title">${item.related_anime_title}</div>
+              <div class="sequel-source-label">de: ${item.source_anime_title}${srcScore}</div>
+              <div class="sequel-meta">${metaChips}</div>
+              <a class="sequel-mal-link" href="https://myanimelist.net/anime/${item.related_anime_id}" target="_blank">Ver no MAL ↗</a>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── Year Filter Helper ────────────────────────
+    function getMinYearFilter() {
+      const el = document.getElementById('startYearFilter');
+      return el ? parseInt(el.value, 10) || 0 : 2017;
+    }
+
+    function applyYearFilter() {
+      if (allAnimeItems && allAnimeItems.length > 0) {
+        renderTimelineChart(allAnimeItems);
+        renderInsightCards(allAnimeItems);
+        renderHeatmap(allAnimeItems);
+      }
+    }
+
+    // ── Insight Cards ─────────────────────────────
+    function renderInsightCards(items) {
+      const grid = document.getElementById('insightsGrid');
+      if (!grid) return;
+
+      const minYear = getMinYearFilter();
+      const completed = items.filter(a => {
+        if (!a.finish_date || a.user_status !== 'completed') return false;
+        if (minYear > 0) {
+          const y = parseInt(a.finish_date.split('-')[0], 10);
+          if (y < minYear) return false;
+        }
+        return true;
+      });
+
+      if (completed.length === 0) {
+        grid.innerHTML = '<div style="color:var(--text-muted);font-size:.85rem;">Nenhum anime completado a partir do ano selecionado.</div>';
+        return;
+      }
+
+      // Build monthly map: { "YYYY-MM": [anime, ...] }
+      const monthly = {};
+      completed.forEach(a => {
+        const d = new Date(a.finish_date + 'T12:00:00');
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        if (!monthly[key]) monthly[key] = [];
+        monthly[key].push(a);
+      });
+
+      const sortedMonths = Object.keys(monthly).sort();
+      const fmtMonth = k => {
+        const [y, m] = k.split('-');
+        return new Date(Number(y), Number(m)-1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+      };
+      const fmtMonthShort = k => {
+        const [y, m] = k.split('-');
+        return new Date(Number(y), Number(m)-1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+      };
+
+      // 1. Mês mais produtivo
+      let bestMonth = sortedMonths[0], bestCount = 0;
+      sortedMonths.forEach(k => { if (monthly[k].length > bestCount) { bestCount = monthly[k].length; bestMonth = k; } });
+
+      // 2. Maior hiato (meses entre dois completados consecutivos)
+      let maxGap = 0, gapStart = '', gapEnd = '';
+      for (let i = 1; i < sortedMonths.length; i++) {
+        const [y1, m1] = sortedMonths[i-1].split('-').map(Number);
+        const [y2, m2] = sortedMonths[i].split('-').map(Number);
+        const gap = (y2 - y1) * 12 + (m2 - m1) - 1; // months between (excluding the months themselves)
+        if (gap > maxGap) { maxGap = gap; gapStart = sortedMonths[i-1]; gapEnd = sortedMonths[i]; }
+      }
+
+      // 3. Sequência atual (streak) — meses consecutivos terminando no mês mais recente
+      const now = new Date();
+      const currentKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+      let streak = 0;
+      let checkKey = sortedMonths[sortedMonths.length - 1];
+      // Walk backwards from the most recent month
+      while (monthly[checkKey]) {
+        streak++;
+        const [cy, cm] = checkKey.split('-').map(Number);
+        const prev = cm === 1
+          ? `${cy-1}-12`
+          : `${cy}-${String(cm-1).padStart(2,'0')}`;
+        checkKey = prev;
+      }
+
+      // 4. Há quanto tempo acompanha (months since first completed)
+      const [fy, fm] = sortedMonths[0].split('-').map(Number);
+      const monthsSince = (now.getFullYear() - fy) * 12 + (now.getMonth()+1 - fm);
+
+      // 5. Média mensal (total completados / número de meses ativos)
+      const avgMonthly = (completed.length / sortedMonths.length).toFixed(1);
+
+      // 6. Melhor nota média num mês (dos scored animes)
+      let bestScoreMonth = '', bestAvgScore = 0;
+      sortedMonths.forEach(k => {
+        const scored = monthly[k].filter(a => a.user_score > 0);
+        if (scored.length >= 2) {
+          const avg = scored.reduce((s, a) => s + a.user_score, 0) / scored.length;
+          if (avg > bestAvgScore) { bestAvgScore = avg; bestScoreMonth = k; }
+        }
+      });
+
+      const card = (icon, label, value, sub, accent) =>
+        `<div class="insight-card" style="--insight-accent:${accent};">
+          <div class="insight-icon">${icon}</div>
+          <div class="insight-label">${label}</div>
+          <div class="insight-value">${value}</div>
+          ${sub ? `<div class="insight-sub">${sub}</div>` : ''}
+        </div>`;
+
+      grid.innerHTML = [
+        card('🏆', 'Mês Mais Produtivo',
+          `${bestCount} anime${bestCount !== 1 ? 's' : ''}`,
+          fmtMonth(bestMonth),
+          '#f59e0b'),
+
+        maxGap > 0
+          ? card('⏳', 'Maior Hiato',
+              `${maxGap} ${maxGap === 1 ? 'mês' : 'meses'}`,
+              `${fmtMonthShort(gapStart)} → ${fmtMonthShort(gapEnd)}`,
+              '#ef4444')
+          : card('⏳', 'Maior Hiato', '— sem hiatos', 'Consistência perfeita!', '#10b981'),
+
+        card('🔥', 'Sequência Atual',
+          `${streak} ${streak === 1 ? 'mês' : 'meses'}`,
+          streak > 0 ? `último: ${fmtMonthShort(sortedMonths[sortedMonths.length-1])}` : '',
+          streak >= 3 ? '#10b981' : streak >= 1 ? '#f59e0b' : '#94a3b8'),
+
+        card('📆', 'Acompanhando há',
+          monthsSince >= 12
+            ? `${Math.floor(monthsSince/12)}a ${monthsSince%12}m`
+            : `${monthsSince} meses`,
+          `desde ${fmtMonth(sortedMonths[0])}`,
+          '#8b5cf6'),
+
+        card('📊', 'Média por Mês Ativo',
+          `${avgMonthly} animes`,
+          `em ${sortedMonths.length} meses ativos`,
+          '#06b6d4'),
+
+        bestScoreMonth
+          ? card('⭐', 'Mês de Melhor Nota',
+              `${bestAvgScore.toFixed(1)} ⭐`,
+              fmtMonth(bestScoreMonth),
+              '#ec4899')
+          : ''
+      ].join('');
+    }
+
+
+
+    // ── Sorting ──────────────────────────────────
+    function toggleSortDir() {
+      sortDir *= -1;
+      document.getElementById('sortDirBtn').innerText = sortDir === -1 ? '↓' : '↑';
+      renderAnimeGrid();
+    }
+
+    function sortItems(items) {
+      const field = document.getElementById('sortField').value;
+      return [...items].sort((a, b) => {
+        let va, vb;
+        switch (field) {
+          case 'score':
+            va = a.user_score || 0; vb = b.user_score || 0; break;
+          case 'episodes':
+            va = a.num_episodes_watched || 0; vb = b.num_episodes_watched || 0; break;
+          case 'finish_date':
+            va = a.finish_date ? new Date(a.finish_date).getTime() : 0;
+            vb = b.finish_date ? new Date(b.finish_date).getTime() : 0; break;
+          case 'global_mean':
+            va = a.global_mean || 0; vb = b.global_mean || 0; break;
+          default: // title
+            return sortDir * a.title.localeCompare(b.title, 'pt-BR');
+        }
+        return sortDir * (va - vb);
+      });
+    }
+
+    // ── Render Library ───────────────────────────
+    function renderAnimeGrid() {
+      const grid = document.getElementById('animeGrid');
+      const titleFilter = document.getElementById('filterTitle').value.toLowerCase();
+
+      const filtered = allAnimeItems.filter(item => {
+        let matchesStatus = false;
+        if (currentStatusFilter === 'all') {
+          matchesStatus = true;
+        } else if (currentStatusFilter === 'rewatching') {
+          matchesStatus = item.is_rewatching || (item.num_times_rewatched && item.num_times_rewatched > 0);
+        } else {
+          matchesStatus = item.user_status === currentStatusFilter;
+        }
+        return matchesStatus && item.title.toLowerCase().includes(titleFilter);
+      });
+
+      const sorted = sortItems(filtered);
+      document.getElementById('libraryCount').innerText = `${sorted.length} de ${allAnimeItems.length} animes`;
+
+      if (sorted.length === 0) {
+        grid.innerHTML = '<div style="color:var(--text-muted);grid-column:1/-1;padding:2rem 0;text-align:center;">Nenhum anime encontrado.</div>';
+        return;
+      }
+
+      const statusColors = {
+        watching: '#06b6d4',
+        completed: '#10b981',
+        on_hold: '#f59e0b',
+        dropped: '#ef4444',
+        plan_to_watch: '#94a3b8'
+      };
+
+      const statusLabels = {
+        watching: 'Assistindo',
+        completed: 'Completado',
+        on_hold: 'Em Pausa',
+        dropped: 'Desistido',
+        plan_to_watch: 'Planeja Assistir'
+      };
+
+      const formatDate = (d) => {
+        if (!d) return '—';
+        return new Date(d + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+      };
+
+      grid.innerHTML = sorted.map((anime, i) => {
+        const sColor = statusColors[anime.user_status] || '#94a3b8';
+        const sLabel = statusLabels[anime.user_status] || anime.user_status || '—';
+        const rewatch = anime.is_rewatching || (anime.num_times_rewatched && anime.num_times_rewatched > 0);
+
+        return `
+          <div class="flip-card" id="fcard-${i}" onclick="toggleFlip('fcard-${i}')">
+            <div class="flip-card-inner">
+
+              <!-- FRONT -->
+              <div class="flip-card-front" style="border-top: 3px solid ${sColor};">
+                <img src="${anime.main_picture || 'https://via.placeholder.com/200x240?text=?'}" class="anime-poster" alt="${anime.title}" loading="lazy">
+                <div class="anime-info">
+                  <div class="anime-title">${anime.title}</div>
+                  <div class="anime-meta">
+                    <span>Eps: ${anime.num_episodes_watched || 0}/${anime.num_episodes || '?'}</span>
+                    <span class="badge-score">⭐ ${anime.user_score || '-'}</span>
+                  </div>
+                  ${rewatch ? `<span class="badge-rewatch">🔁 Reassistindo (${anime.num_times_rewatched || 1}x)</span>` : ''}
+                </div>
+              </div>
+
+              <!-- BACK -->
+              <div class="flip-card-back" style="border-top: 3px solid ${sColor};">
+                <div class="flip-back-title">${anime.title}</div>
+
+                <div class="flip-back-row">
+                  <span class="flip-back-icon">🎯</span>
+                  <div>Status: <strong>${sLabel}</strong></div>
+                </div>
+
+                <div class="flip-back-row">
+                  <span class="flip-back-icon">⭐</span>
+                  <div>Sua nota: <strong>${anime.user_score || '—'}</strong>
+                    ${anime.global_mean ? ` &nbsp;·&nbsp; MAL: <strong>${anime.global_mean}</strong>` : ''}
+                  </div>
+                </div>
+
+                <div class="flip-back-row">
+                  <span class="flip-back-icon">🎬</span>
+                  <div>Episódios: <strong>${anime.num_episodes_watched || 0} / ${anime.num_episodes || '?'}</strong></div>
+                </div>
+
+                ${anime.rank ? `
+                <div class="flip-back-row">
+                  <span class="flip-back-icon">🏆</span>
+                  <div>Rank MAL: <strong>#${anime.rank}</strong></div>
+                </div>` : ''}
+
+                ${anime.genres ? `
+                <div class="flip-back-row">
+                  <span class="flip-back-icon">🏷️</span>
+                  <div>Gêneros: <strong>${anime.genres}</strong></div>
+                </div>` : ''}
+
+                ${anime.media_type ? `
+                <div class="flip-back-row">
+                  <span class="flip-back-icon">📺</span>
+                  <div>Tipo: <strong>${anime.media_type.toUpperCase()}</strong></div>
+                </div>` : ''}
+
+                ${anime.studio ? `
+                <div class="flip-back-row">
+                  <span class="flip-back-icon">🏢</span>
+                  <div>Estúdio: <strong>${anime.studio}</strong></div>
+                </div>` : ''}
+
+                <div class="flip-back-row">
+                  <span class="flip-back-icon">📅</span>
+                  <div>
+                    Início: <strong>${formatDate(anime.start_date)}</strong><br>
+                    Fim: <strong>${formatDate(anime.finish_date)}</strong>
+                  </div>
+                </div>
+
+                ${rewatch ? `
+                <div class="flip-back-row">
+                  <span class="flip-back-icon">🔁</span>
+                  <div>Reassistido <strong>${anime.num_times_rewatched || 1}x</strong></div>
+                </div>` : ''}
+
+                <div class="flip-back-hint">Clique para voltar</div>
+              </div>
+
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function toggleFlip(id) {
+      document.getElementById(id).classList.toggle('flipped');
+    }
+
+
+    function setFilter(status, btnElement) {
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+      currentStatusFilter = status;
+      renderAnimeGrid();
+    }
+
+    // ── Charts ───────────────────────────────────
+    const CHART_DEFAULTS = {
+      color: '#94a3b8',
+      font: { family: 'Outfit' }
+    };
+
+    function renderStatusChart(distribution) {
+      const ctx = document.getElementById('statusChart').getContext('2d');
+      if (statusChartInst) statusChartInst.destroy();
+      const labels = Object.keys(distribution).map(s => s.replace('_', ' ').toUpperCase());
+      statusChartInst = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{ data: Object.values(distribution), backgroundColor: ['#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899'], borderWidth: 0 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: CHART_DEFAULTS } }
+        }
+      });
+    }
+
+    function renderScoreChart(items) {
+      const ctx = document.getElementById('scoreChart').getContext('2d');
+      if (scoreChartInst) scoreChartInst.destroy();
+
+      const buckets = {};
+      for (let i = 1; i <= 10; i++) buckets[i] = 0;
+      items.forEach(a => { if (a.user_score && a.user_score > 0) buckets[a.user_score] = (buckets[a.user_score] || 0) + 1; });
+
+      const total = Object.values(buckets).reduce((s, v) => s + v, 0);
+      document.getElementById('scoreChartSubtitle').innerText = `${total} animes avaliados`;
+
+      scoreChartInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(buckets).map(k => `★ ${k}`),
+          datasets: [{
+            data: Object.values(buckets),
+            backgroundColor: 'rgba(139,92,246,0.6)',
+            borderColor: '#8b5cf6',
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { family: 'Outfit' } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+            y: { ticks: { color: '#94a3b8', font: { family: 'Outfit' }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.04)' } }
+          }
+        }
+      });
+    }
+
+    function renderTimelineChart(items) {
+      const ctx = document.getElementById('timelineChart').getContext('2d');
+      if (timelineChartInst) timelineChartInst.destroy();
+
+      const minYear = getMinYearFilter();
+
+      // Agrupa animes completados por mês (filtrando por ano mínimo se definido)
+      const monthly = {};
+      items.forEach(a => {
+        if (a.finish_date) {
+          const y = parseInt(a.finish_date.split('-')[0], 10);
+          if (minYear > 0 && y < minYear) return;
+          const d = new Date(a.finish_date + 'T12:00:00');
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          monthly[key] = (monthly[key] || 0) + 1;
+        }
+      });
+
+      const sorted = Object.keys(monthly).sort();
+      const labels = sorted.map(k => {
+        const [y, m] = k.split('-');
+        return new Date(Number(y), Number(m) - 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+      });
+
+      document.getElementById('timelineSubtitle').innerText = sorted.length > 0
+        ? `${sorted[0]} → ${sorted[sorted.length - 1]}`
+        : '';
+
+      timelineChartInst = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Completados',
+            data: sorted.map(k => monthly[k]),
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16,185,129,0.15)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#10b981',
+            pointRadius: 4,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { family: 'Outfit', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+            y: { ticks: { color: '#94a3b8', font: { family: 'Outfit' }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderStudiosChart(topStudios) {
+      const ctx = document.getElementById('studiosChart').getContext('2d');
+      if (studiosChartInst) studiosChartInst.destroy();
+      studiosChartInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: topStudios.map(s => s.studio),
+          datasets: [{
+            data: topStudios.map(s => s.count),
+            backgroundColor: ['#8b5cf6','#ec4899','#06b6d4','#10b981','#f59e0b'],
+            borderRadius: 8, borderWidth: 0
+          }]
+        },
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { family: 'Outfit' } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+            y: { ticks: { color: '#94a3b8', font: { family: 'Outfit', size: 11 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function renderMediaTypeChart(items) {
+      const ctx = document.getElementById('mediaTypeChart').getContext('2d');
+      if (mediaTypeChartInst) mediaTypeChartInst.destroy();
+      const counts = {};
+      items.forEach(a => {
+        const t = (a.media_type || 'unknown').toUpperCase();
+        counts[t] = (counts[t] || 0) + 1;
+      });
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      mediaTypeChartInst = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: sorted.map(e => e[0]),
+          datasets: [{ data: sorted.map(e => e[1]), backgroundColor: ['#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899'], borderWidth: 0 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: CHART_DEFAULTS } }
+        }
+      });
+    }
+
+    // ── Heatmap ───────────────────────────────────
+    function renderHeatmap(items) {
+      const wrap = document.getElementById('heatmapWrap');
+      heatmapData = {};
+      const minYearFilter = getMinYearFilter();
+
+      // Build data: only finished animes with finish_date >= minYearFilter
+      items.forEach(a => {
+        if (!a.finish_date) return;
+        const y = parseInt(a.finish_date.split('-')[0], 10);
+        if (minYearFilter > 0 && y < minYearFilter) return;
+        const d = new Date(a.finish_date + 'T12:00:00');
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        if (!heatmapData[key]) heatmapData[key] = [];
+        heatmapData[key].push(a);
+      });
+
+      if (Object.keys(heatmapData).length === 0) {
+        wrap.innerHTML = '<div style="color:var(--text-muted);font-size:.85rem;">Nenhum anime com data de conclusão encontrado. Sincronize sua lista primeiro.</div>';
+        return;
+      }
+
+      // Determine year range
+      const allKeys = Object.keys(heatmapData).sort();
+      const minYear = parseInt(allKeys[0].split('-')[0]);
+      const maxYear = parseInt(allKeys[allKeys.length - 1].split('-')[0]);
+
+      document.getElementById('heatmapSubtitle').innerText = `${minYear} → ${maxYear} · ${Object.values(heatmapData).flat().length} animes concluídos`;
+
+      // Find max for intensity scale
+      const maxCount = Math.max(...Object.values(heatmapData).map(a => a.length));
+
+      function getLevel(count) {
+        if (count === 0) return 0;
+        const ratio = count / maxCount;
+        if (ratio <= 0.2) return 1;
+        if (ratio <= 0.4) return 2;
+        if (ratio <= 0.6) return 3;
+        if (ratio <= 0.8) return 4;
+        return 5;
+      }
+
+      const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+      let html = '<div class="heatmap-grid">';
+
+      // Header row: year label + month labels
+      html += '<div class="heatmap-label-year"></div>';
+      MONTHS.forEach(m => {
+        html += `<div class="heatmap-label-month">${m}</div>`;
+      });
+
+      // Data rows per year
+      for (let y = minYear; y <= maxYear; y++) {
+        html += `<div class="heatmap-label-year">${y}</div>`;
+        for (let m = 1; m <= 12; m++) {
+          const key = `${y}-${String(m).padStart(2, '0')}`;
+          const count = (heatmapData[key] || []).length;
+          const level = getLevel(count);
+          const tooltip = count > 0 ? count : '';
+          html += `<div class="heatmap-cell level-${level}" 
+            title="${count > 0 ? count + ' anime(s) em ' + MONTHS[m-1] + '/' + y : ''}"
+            onclick="${count > 0 ? `showHeatmapDetail('${key}')` : ''}"
+          >${tooltip}</div>`;
+        }
+      }
+
+      html += '</div>';
+      wrap.innerHTML = html;
+
+      // Hide detail panel when re-rendering
+      document.getElementById('heatmapDetail').classList.remove('visible');
+    }
+
+    function showHeatmapDetail(key) {
+      const animes = heatmapData[key] || [];
+      if (animes.length === 0) return;
+
+      const [year, month] = key.split('-');
+      const MONTHS_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+      const monthName = MONTHS_FULL[parseInt(month) - 1];
+
+      document.getElementById('heatmapDetailTitle').innerText = `📅 ${monthName} de ${year} — ${animes.length} anime(s) concluído(s)`;
+
+      document.getElementById('heatmapAnimeList').innerHTML = animes.map(a => `
+        <div class="heatmap-anime-item">
+          <img src="${a.main_picture || 'https://via.placeholder.com/34x48?text=?'}" alt="${a.title}" loading="lazy">
+          <div>
+            <div class="heatmap-anime-item-title">${a.title}</div>
+            <div class="heatmap-anime-item-score">
+              ${a.user_score ? `⭐ ${a.user_score}` : ''}
+              ${a.num_episodes ? `&nbsp;·&nbsp;${a.num_episodes} eps` : ''}
+            </div>
+          </div>
+        </div>`).join('');
+
+      const detail = document.getElementById('heatmapDetail');
+      detail.classList.add('visible');
+      detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // ── RSS Feed ─────────────────────────────────
+    async function loadRSSFeed(username) {
+
+      try {
+        const container = document.getElementById('rssContainer');
+        let events = [];
+        if (username) {
+          const r = await fetch(`/api/v1/user/${username}/events?limit=15`);
+          if (r.ok) events = (await r.json()).events || [];
+        }
+        if (events.length > 0) {
+          document.getElementById('rssCount').innerText = `${events.length} atividades de ${username}`;
+          container.innerHTML = events.map(ev => `
+            <div class="rss-item">
+              <div class="rss-item-title">${ev.description}</div>
+              <div class="rss-item-date">🕒 ${ev.created_at ? new Date(ev.created_at).toLocaleString('pt-BR') : 'Recente'}</div>
+            </div>`).join('');
+          return;
+        }
+        const r2 = await fetch('/api/v1/news?limit=15');
+        if (!r2.ok) return;
+        const data = await r2.json();
+        document.getElementById('rssCount').innerText = `${data.total} notícias`;
+        if (!data.items || data.items.length === 0) {
+          container.innerHTML = '<div style="color:var(--text-muted);font-size:.85rem;">Nenhuma atividade. Clique em Disparar Worker ETL.</div>';
+          return;
+        }
+        container.innerHTML = data.items.map(item => `
+          <div class="rss-item">
+            <a href="${item.link}" target="_blank" class="rss-item-title">${item.title}</a>
+            <div class="rss-item-date">🕒 ${item.pub_date ? new Date(item.pub_date).toLocaleString('pt-BR') : 'Recente'}</div>
+          </div>`).join('');
+      } catch (err) {
+        console.error("Erro ao carregar feed:", err);
+      }
+    }
+
+    // ── Actions ──────────────────────────────────
+    async function syncUserAPI() {
+      if (!activeUsername) return;
+      const btnText = document.getElementById('syncBtnText');
+      btnText.innerHTML = '<span class="loader"></span> Sincronizando...';
+      try {
+        const response = await fetch(`/api/v1/animelist/${activeUsername}`, { method: 'POST' });
+        const data = await response.json();
+        if (response.ok) {
+          showToast(data.message || 'Sincronização concluída!');
+          loadProfileData(activeUsername);
+        } else {
+          alert('Erro ao sincronizar: ' + (data.detail || 'Verifique se o perfil existe no MAL'));
+        }
+      } catch (err) {
+        alert('Erro de conexão ao sincronizar');
+      } finally {
+        btnText.innerText = '🔄 Sincronizar via API';
+      }
+    }
+
+    // ── Compare Panel ─────────────────────────────
+    let compareChartInst = null;
+    let compareData = null;
+    let compareFilter = 'all'; // 'all' | 'agree' | 'diverge'
+
+    function switchTabCompare() {
+      // Update label for user1 when tab is opened
+      const lbl = document.getElementById('compareUser1Label');
+      if (lbl && activeUsername) lbl.textContent = activeUsername;
+    }
+
+    // Override switchTab to hook into compare tab
+    const _origSwitchTab = switchTab;
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      document.getElementById('panel-' + name).classList.add('active');
+      if (name === 'heatmap' && allAnimeItems.length > 0) renderHeatmap(allAnimeItems);
+      if (name === 'compare') switchTabCompare();
+    }
+
+    async function runCompare() {
+      const u2 = document.getElementById('compareUser2Input').value.trim().toLowerCase();
+      if (!u2) { showToast('⚠️ Digite o username do 2º perfil.'); return; }
+      if (!activeUsername) { showToast('⚠️ Selecione um perfil ativo primeiro.'); return; }
+
+      const btnText = document.getElementById('compareBtnText');
+      btnText.innerHTML = '<span class="loader"></span>';
+
+      try {
+        const res = await fetch(`/api/v1/compare?user1=${encodeURIComponent(activeUsername)}&user2=${encodeURIComponent(u2)}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          document.getElementById('compareResult').innerHTML = `
+            <div class="compare-state">
+              <div class="icon">❌</div>
+              <div>${data.detail || 'Erro ao comparar perfis.'}</div>
+              <div style="margin-top:1rem;font-size:0.8rem;">Certifique-se que ambos os perfis foram sincronizados na plataforma.</div>
+            </div>`;
+          return;
+        }
+
+        compareData = data;
+        compareFilter = 'all';
+        renderCompare(data);
+      } catch (err) {
+        document.getElementById('compareResult').innerHTML = `<div class="compare-state"><div class="icon">❌</div><div>Erro de conexão.</div></div>`;
+      } finally {
+        btnText.innerHTML = 'Comparar';
+      }
+    }
+
+    function renderCompare(data) {
+      const { user1, user2, compatibility_score, compatibility_note, shared_count,
+              shared_animes, top_divergences, recommended_for_u2, recommended_for_u1 } = data;
+
+      // Badge class
+      let badgeClass = 'none', badgePct = '—', badgeLbl = 'Sem dados';
+      if (compatibility_score !== null && compatibility_score !== undefined) {
+        badgePct = compatibility_score + '%';
+        if (compatibility_score >= 70)      { badgeClass = 'high'; badgeLbl = 'Alta Afinidade'; }
+        else if (compatibility_score >= 45) { badgeClass = 'mid';  badgeLbl = 'Afinidade Média'; }
+        else                                { badgeClass = 'low';  badgeLbl = 'Baixa Afinidade'; }
+      }
+
+      const fallback = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=8b5cf6&color=fff`;
+      const av1 = (user1.picture && user1.picture.startsWith('http')) ? user1.picture : fallback(user1.name);
+      const av2 = (user2.picture && user2.picture.startsWith('http')) ? user2.picture : fallback(user2.name);
+
+      // KPI comparison rows helper
+      const kpiRows = [
+        { label: '🎬 Total de Animes',   v1: user1.stats.total_animes,    v2: user2.stats.total_animes,    fmt: v => v },
+        { label: '📺 Episódios',          v1: user1.stats.total_episodes,  v2: user2.stats.total_episodes,  fmt: v => v },
+        { label: '⏱️ Dias Assistidos',    v1: user1.stats.total_days,      v2: user2.stats.total_days,      fmt: v => v + 'd' },
+        { label: '⭐ Nota Média',         v1: user1.stats.mean_score,      v2: user2.stats.mean_score,      fmt: v => v || '—' },
+        { label: '🔁 Reassistidos',       v1: user1.stats.rewatched_count, v2: user2.stats.rewatched_count, fmt: v => v },
+      ];
+
+      const kpiHtml = kpiRows.map(row => {
+        const w1 = row.v1 > row.v2 ? 'winner' : '';
+        const w2 = row.v2 > row.v1 ? 'winner' : '';
+        return `
+          <div class="compare-kpi-val ${w1}">${row.fmt(row.v1)}</div>
+          <div class="compare-kpi-label">${row.label}</div>
+          <div class="compare-kpi-val ${w2}">${row.fmt(row.v2)}</div>`;
+      }).join('');
+
+      // Status distribution chart data
+      const allStatuses = [...new Set([
+        ...Object.keys(user1.stats.status_distribution),
+        ...Object.keys(user2.stats.status_distribution)
+      ])];
+      const statusLabels = { watching:'Assistindo', completed:'Completado', on_hold:'Em Pausa', dropped:'Desistido', plan_to_watch:'Planeja' };
+      const chartLabels = allStatuses.map(s => statusLabels[s] || s);
+      const data1 = allStatuses.map(s => user1.stats.status_distribution[s] || 0);
+      const data2 = allStatuses.map(s => user2.stats.status_distribution[s] || 0);
+
+      document.getElementById('compareResult').innerHTML = `
+        <!-- Hero -->
+        <div class="compare-hero">
+          <div class="compare-user-card">
+            <img src="${av1}" alt="${user1.name}" onerror="this.src='${fallback(user1.name)}'">
+            <div class="name">${user1.name}</div>
+            <div class="sub">${user1.stats.total_animes} animes · ⭐ ${user1.stats.mean_score || '—'}</div>
+          </div>
+
+          <div class="compare-badge-wrap">
+            <div class="compare-badge ${badgeClass}">
+              <span class="pct">${badgePct}</span>
+              <span class="lbl">${badgeLbl}</span>
+            </div>
+            <div class="compare-badge-note" style="margin:0.5rem auto 0; text-align:center;">
+              ${compatibility_note ? compatibility_note : `${shared_count} animes em comum`}
+            </div>
+          </div>
+
+          <div class="compare-user-card">
+            <img src="${av2}" alt="${user2.name}" onerror="this.src='${fallback(user2.name)}'">
+            <div class="name">${user2.name}</div>
+            <div class="sub">${user2.stats.total_animes} animes · ⭐ ${user2.stats.mean_score || '—'}</div>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="chart-card" style="margin-bottom:2rem;">
+          <div class="card-header"><div class="card-title">📊 Comparativo de Métricas</div></div>
+          <div class="compare-kpi-grid" style="margin-bottom:0;">
+            <div class="compare-kpi-val" style="font-size:0.75rem;color:var(--accent-purple);font-weight:700;background:rgba(139,92,246,0.06);border-bottom:1px solid var(--card-border);">${user1.name.toUpperCase()}</div>
+            <div class="compare-kpi-label" style="background:var(--bg-dark);border-bottom:1px solid var(--card-border);">MÉTRICA</div>
+            <div class="compare-kpi-val" style="font-size:0.75rem;color:#ec4899;font-weight:700;background:rgba(236,72,153,0.06);border-bottom:1px solid var(--card-border);">${user2.name.toUpperCase()}</div>
+            ${kpiHtml}
+          </div>
+        </div>
+
+        <!-- Status Chart -->
+        <div class="chart-card" style="margin-bottom:2rem;">
+          <div class="card-header"><div class="card-title">📈 Distribuição de Status Comparada</div></div>
+          <div style="height:220px;"><canvas id="compareChart"></canvas></div>
+        </div>
+
+        <!-- Timeline Chart -->
+        <div class="chart-card" style="margin-bottom:2rem;">
+          <div class="card-header">
+            <div class="card-title">📆 Linha do Tempo de Completados</div>
+            <span class="card-subtitle" id="compareTimelineSubtitle"></span>
+          </div>
+          <div style="height:240px;"><canvas id="compareTimelineChart"></canvas></div>
+        </div>
+
+        <!-- Shared Animes -->
+        ${shared_animes.length > 0 ? `
+        <div class="chart-card" style="margin-bottom:2rem;">
+          <div class="card-header">
+            <div class="card-title">🎯 Animes em Comum <span style="color:var(--text-muted);font-size:0.8rem;">(${shared_count})</span></div>
+          </div>
+          <div class="shared-filter-row">
+            <button class="filter-btn active" onclick="setSharedFilter('all',this)">Todos</button>
+            <button class="filter-btn" onclick="setSharedFilter('agree',this)">✅ Notas Próximas (±1)</button>
+            <button class="filter-btn" onclick="setSharedFilter('diverge',this)">🔥 Maior Divergência</button>
+          </div>
+          <div class="shared-grid" id="sharedGrid">${renderSharedGrid(shared_animes, 'all', user1.name, user2.name)}</div>
+        </div>` : ''}
+
+        <!-- Top Divergences -->
+        ${top_divergences.length > 0 ? `
+        <div class="chart-card" style="margin-bottom:2rem;">
+          <div class="card-header"><div class="card-title">💥 Maiores Divergências de Opinião</div></div>
+          <div class="shared-grid">${renderSharedGrid(top_divergences, 'all', user1.name, user2.name)}</div>
+        </div>` : ''}
+
+        <!-- Recs -->
+        ${(recommended_for_u2.length > 0 || recommended_for_u1.length > 0) ? `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+          ${recommended_for_u2.length > 0 ? `
+          <div class="chart-card">
+            <div class="card-header"><div class="card-title">💜 Para ${user2.name}</div><span class="card-subtitle">amados por ${user1.name}</span></div>
+            <div class="rec-grid">${renderRecGrid(recommended_for_u2)}</div>
+          </div>` : ''}
+          ${recommended_for_u1.length > 0 ? `
+          <div class="chart-card">
+            <div class="card-header"><div class="card-title">💜 Para ${user1.name}</div><span class="card-subtitle">amados por ${user2.name}</span></div>
+            <div class="rec-grid">${renderRecGrid(recommended_for_u1)}</div>
+          </div>` : ''}
+        </div>` : ''}
+      `;
+
+      // Render grouped bar chart
+      requestAnimationFrame(() => {
+        const ctx = document.getElementById('compareChart');
+        if (!ctx) return;
+        if (compareChartInst) compareChartInst.destroy();
+        compareChartInst = new Chart(ctx.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: chartLabels,
+            datasets: [
+              { label: user1.name, data: data1, backgroundColor: 'rgba(139,92,246,0.7)', borderRadius: 6, borderWidth: 0 },
+              { label: user2.name, data: data2, backgroundColor: 'rgba(236,72,153,0.7)',  borderRadius: 6, borderWidth: 0 }
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Outfit' } } } },
+            scales: {
+              x: { ticks: { color: '#94a3b8', font: { family: 'Outfit' } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+              y: { ticks: { color: '#94a3b8', font: { family: 'Outfit' }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true }
+            }
+          }
+        });
+
+        // Dual-line timeline chart
+        const tCtx = document.getElementById('compareTimelineChart');
+        if (!tCtx) return;
+
+        // Build unified sorted month labels from both timelines
+        const tl1 = data.timeline_u1 || {};
+        const tl2 = data.timeline_u2 || {};
+        const allMonths = [...new Set([...Object.keys(tl1), ...Object.keys(tl2)])].sort();
+
+        if (allMonths.length > 0) {
+          const fmtMonth = k => {
+            const [y, m] = k.split('-');
+            return new Date(Number(y), Number(m) - 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+          };
+          const tLabels = allMonths.map(fmtMonth);
+          const tData1  = allMonths.map(k => tl1[k] || 0);
+          const tData2  = allMonths.map(k => tl2[k] || 0);
+
+          const subtitle = document.getElementById('compareTimelineSubtitle');
+          if (subtitle) subtitle.textContent = `${allMonths[0]} → ${allMonths[allMonths.length - 1]}`;
+
+          if (window._compareTimelineInst) window._compareTimelineInst.destroy();
+          window._compareTimelineInst = new Chart(tCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+              labels: tLabels,
+              datasets: [
+                {
+                  label: user1.name,
+                  data: tData1,
+                  borderColor: '#8b5cf6',
+                  backgroundColor: 'rgba(139,92,246,0.1)',
+                  fill: true, tension: 0.4,
+                  pointBackgroundColor: '#8b5cf6',
+                  pointRadius: 3, pointHoverRadius: 6
+                },
+                {
+                  label: user2.name,
+                  data: tData2,
+                  borderColor: '#ec4899',
+                  backgroundColor: 'rgba(236,72,153,0.1)',
+                  fill: true, tension: 0.4,
+                  pointBackgroundColor: '#ec4899',
+                  pointRadius: 3, pointHoverRadius: 6
+                }
+              ]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              interaction: { mode: 'index', intersect: false },
+              plugins: {
+                legend: { labels: { color: '#94a3b8', font: { family: 'Outfit' } } },
+                tooltip: {
+                  callbacks: {
+                    label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} anime${ctx.parsed.y !== 1 ? 's' : ''}`
+                  }
+                }
+              },
+              scales: {
+                x: { ticks: { color: '#94a3b8', font: { family: 'Outfit', size: 11 }, maxTicksLimit: 18 }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                y: { ticks: { color: '#94a3b8', font: { family: 'Outfit' }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true }
+              }
+            }
+          });
+        }
+      });
+    }
+
+    function renderSharedGrid(items, filter, name1, name2) {
+      let list = [...items];
+      if (filter === 'agree')   list = list.filter(a => a.u1_score && a.u2_score && Math.abs(a.diff) <= 1).slice(0, 60);
+      else if (filter === 'diverge') list = list.sort((a,b) => b.abs_diff - a.abs_diff).slice(0, 40);
+      else list = list.slice(0, 60);
+
+      if (list.length === 0) return '<div style="color:var(--text-muted);font-size:.85rem;grid-column:1/-1;">Nenhum anime encontrado neste filtro.</div>';
+
+      return list.map(a => {
+        const diffAbs = a.abs_diff || 0;
+        const diffClass = diffAbs === 0 ? 'agree' : diffAbs <= 2 ? 'small' : 'big';
+        const diffLabel = diffAbs === 0 ? '= Igual' : (a.diff > 0 ? `+${a.diff}` : `${a.diff}`);
+        return `
+          <div class="shared-card">
+            <img src="${a.picture || 'https://via.placeholder.com/40x56?text=?'}" alt="${a.title}" loading="lazy">
+            <div class="shared-card-info">
+              <div class="shared-card-title">${a.title}</div>
+              <div class="shared-scores">
+                <span class="score-chip">⭐ ${a.u1_score || '—'}</span>
+                <span style="color:var(--text-muted);font-size:0.7rem;">vs</span>
+                <span class="score-chip pink">⭐ ${a.u2_score || '—'}</span>
+                ${(a.u1_score && a.u2_score) ? `<span class="diff-chip ${diffClass}">${diffLabel}</span>` : ''}
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderRecGrid(items) {
+      return items.map(a => `
+        <div class="rec-card">
+          <img src="${a.picture || 'https://via.placeholder.com/160x200?text=?'}" alt="${a.title}" loading="lazy">
+          <div class="rec-card-info">
+            <div class="rec-card-title">${a.title}</div>
+            <div class="rec-card-score">⭐ ${a.recommender_score}${a.global_mean ? ' · MAL: ' + a.global_mean : ''}</div>
+          </div>
+        </div>`).join('');
+    }
+
+    function setSharedFilter(filter, btn) {
+      document.querySelectorAll('.shared-filter-row .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      compareFilter = filter;
+      if (!compareData) return;
+      const { shared_animes, user1, user2 } = compareData;
+      document.getElementById('sharedGrid').innerHTML = renderSharedGrid(shared_animes, filter, user1.name, user2.name);
+    }
+  </script>
+</body>
+</html>
+

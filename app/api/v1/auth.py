@@ -1,94 +1,88 @@
 import os
-import urllib.parse
+import secrets
 import requests
-from app.database import get_db
+from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
-from fastapi import APIRouter, HTTPException
-from app.services.user_service import generate_code_challenge
-from datetime import datetime
-from app.models.models import User
-from app.schemas.user import UserCreate, UserResponse
 from sqlalchemy.orm import Session
-from dotenv import load_dotenv
-from fastapi import Request, Depends
-import json
-from fastapi.encoders import jsonable_encoder
+from app.database import SessionLocal
+from app.services.token_service import save_system_tokens
+
 router = APIRouter()
-load_dotenv()
 
-@router.get('/login')
-async def myanimelist_login(request: Request):
-    """
-        Passo 1: Redirecionar o utilizador para o MyAnimeList.
-    """
-    code_challenge = generate_code_challenge()
-    code_challenge_method = 'plain'
-    request.session["code_verifier"] = code_challenge
-    params = {
-        'response_type': 'code',
-        'client_id': os.getenv('CLIENT_ID'),
-        'redirect_uri': os.getenv('REDIRECT_URI'),
-        'code_challenge': code_challenge,
-        'code_challenge_method': code_challenge_method
-    }
-    print(params)
-    url = 'https://myanimelist.net/v1/oauth2/authorize?' + urllib.parse.urlencode(params)
-    return RedirectResponse(url)
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+REDIRECT_URI = os.getenv("REDIRECT_URI", "http://localhost:8000/api/v1/auth/callback")
+TOKEN_URL = os.getenv("TOKEN_URL", "https://myanimelist.net/v1/oauth2/token")
+AUTH_URL = "https://myanimelist.net/v1/oauth2/authorize"
 
-# Função de callback do login
+
+def generate_code_verifier() -> str:
+    return secrets.token_urlsafe(100)[:128]
+
+
+@router.get("/login")
+def login(request: Request):
+    """Inicia o fluxo OAuth com o MyAnimeList. Acesse uma única vez para autorizar o sistema."""
+    code_verifier = generate_code_verifier()
+    request.session["code_verifier"] = code_verifier
+
+    auth_url = (
+        f"{AUTH_URL}"
+        f"?response_type=code"
+        f"&client_id={CLIENT_ID}"
+        f"&redirect_uri={REDIRECT_URI}"
+        f"&code_challenge={code_verifier}"
+        f"&code_challenge_method=plain"
+    )
+    return RedirectResponse(url=auth_url)
+
+
 @router.get("/auth/callback")
-async def my_animelist_callback(request: Request, db: Session = Depends(get_db)):
-    code = request.query_params.get('code')
-    state = request.query_params.get('state')
+def auth_callback(request: Request, code: str = None):
+    """Recebe o código de autorização do MAL e salva os tokens do sistema no banco."""
+    if not code:
+        return {"error": "Código de autorização ausente."}
+
     code_verifier = request.session.get("code_verifier")
-    print(f"get code verifier", code_verifier)
-    if code:
-        token_url = os.getenv('TOKEN_URL')
-        if not token_url:
-            return {'message': 'TOKEN_URL não configurado'}
-        data = {
-            'client_id': os.getenv('CLIENT_ID'),
-            'client_secret': os.getenv('CLIENT_SECRET'),
-            'grant_type': 'authorization_code',
-            'code': code,
-            'redirect_uri': os.getenv('REDIRECT_URI'),
-            'code_verifier': code_verifier
-        }
-        response = requests.post(token_url, data=data)
-        tokens = response.json()
+    if not code_verifier:
+        return {"error": "Code verifier não encontrado na sessão. Tente fazer login novamente."}
 
-        if tokens.get('error'):
-            return {"message": f"Erro!, Erro ao realizar login, {tokens}"}
-            # return HttpResponse('')
-        
-        user_info_url = 'https://api.myanimelist.net/v2/users/@me'
-        headers = {'Authorization': 'Bearer ' + tokens['access_token']}
-        user_info_response = requests.get(user_info_url, headers=headers)
-        user_info = user_info_response.json()
+    response = requests.post(TOKEN_URL, data={
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "code": code,
+        "code_verifier": code_verifier,
+        "grant_type": "authorization_code",
+        "redirect_uri": REDIRECT_URI,
+    }, timeout=15)
 
-        joined_at_str = user_info['joined_at']
-        joined_at = datetime.strptime(joined_at_str, '%Y-%m-%dT%H:%M:%S%z').date() if joined_at_str else None
-        name = str(user_info['name']).lower()
-        picture_url = user_info.get("picture")
-        try:
-            user = User(
-                id=user_info['id'],
-                name = name,
-                gender =  user_info['gender'],
-                joined_at = joined_at,
-                picture = user_info['picture'],
-                access_token = tokens['access_token'],
-                refresh_token = tokens['refresh_token'] 
-            )
-            db.merge(user)
-            db.commit()
-            return {'Message': f'perfil {name} coletado com sucesso'}
-        
-        except Exception as e:
-            db.rollback()
-            return {"message": f'Erro ao salvar o perfil: {str(e)}'}
-    else:
-        return {"message": 'Erro ao coletar o perfil'}
-    
+    if response.status_code != 200:
+        return {"error": f"Falha ao obter token: {response.status_code} — {response.text}"}
 
- 
+    tokens = response.json()
+    db: Session = SessionLocal()
+    try:
+        save_system_tokens(
+            db,
+            access_token=tokens["access_token"],
+            refresh_token=tokens["refresh_token"],
+            expires_in=tokens.get("expires_in", 2592000)
+        )
+    finally:
+        db.close()
+
+    return RedirectResponse(url="/?auth=success")
+
+
+@router.get("/auth/status")
+def auth_status():
+    """Retorna se o sistema já possui um token OAuth salvo no banco."""
+    db: Session = SessionLocal()
+    try:
+        from app.models.models import AppCredential
+        credential = db.query(AppCredential).first()
+        if credential:
+            return {"authenticated": True, "message": "Token do sistema ativo."}
+        return {"authenticated": False, "message": "Nenhum token do sistema encontrado. Acesse /api/v1/login para autorizar."}
+    finally:
+        db.close()
