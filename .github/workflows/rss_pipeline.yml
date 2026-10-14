@@ -1,0 +1,40 @@
+name: "01 - RSS News & User Activity Flow"
+
+on:
+  schedule:
+    # Executa a cada 1 hora no minuto 0
+    - cron: '0 * * * *'
+  workflow_dispatch: # Permite disparo manual com 1 clique pelo GitHub
+
+jobs:
+  run-rss-flow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar Dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Executar RSS Activity Flow
+        env:
+          PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
+          PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPA_LAKE_ENDPOINT: ${{ secrets.SUPA_LAKE_ENDPOINT }}
+          SUPA_LAKE_REGION: ${{ secrets.SUPA_LAKE_REGION }}
+          SUPA_LAKE_ACCESS_KEY: ${{ secrets.SUPA_LAKE_ACCESS_KEY }}
+          SUPA_LAKE_SECRET_KEY: ${{ secrets.SUPA_LAKE_SECRET_KEY }}
+          SUPA_LAKE_BUCKET: ${{ secrets.SUPA_LAKE_BUCKET }}
+          MAL_CLIENT_ID: ${{ secrets.MAL_CLIENT_ID }}
+          ANIMIND_API_URL: ${{ secrets.ANIMIND_API_URL }}
+        run: |
+          python orchestration/rss_activity_flow.py

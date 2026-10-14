@@ -14,6 +14,21 @@ if str(RAIZ_PROJETO) not in sys.path:
     sys.path.insert(0, str(RAIZ_PROJETO))
 
 
+from orchestration.lake_storage import sync_lake_from_cloud, sync_lake_to_cloud
+
+
+@task(name="00 - Sincronizar Lakehouse do Cloud S3 (Supabase Storage)")
+def task_pull_lake():
+    """Baixa o estado persistente do Data Lakehouse do Supabase Storage antes do processamento Spark."""
+    sync_lake_from_cloud()
+
+
+@task(name="05 - Sincronizar Lakehouse Atualizado com o Cloud S3 (Supabase Storage)")
+def task_push_lake():
+    """Envia as tabelas atualizadas (Silver, Gold, Features) de volta para o Supabase Storage S3."""
+    sync_lake_to_cloud()
+
+
 @task(name="01 - Bronze to Silver (Catálogo, Relações e Usuários)", retries=1, retry_delay_seconds=10)
 def task_bronze_to_silver():
     """Lê os JSONs brutos da Bronze e gera as tabelas normalizadas em Parquet na Silver."""
@@ -82,6 +97,9 @@ def animind_pipeline_flow():
     print("🚀 Iniciando Pipeline End-to-End AniMind via Prefect Cloud")
     print("🚀 ========================================================")
 
+    # 0. Sincroniza estado persistente da nuvem
+    task_pull_lake()
+
     # 1. Processa Bronze -> Silver
     task_bronze_to_silver()
 
@@ -94,6 +112,9 @@ def animind_pipeline_flow():
     # 4. Sincroniza tabelas Gold para o PostgreSQL
     task_sync_postgres()
 
+    # 5. Envia camadas atualizadas para o Supabase Storage S3
+    task_push_lake()
+
     print("🎉 ========================================================")
     print("🎉 Pipeline AniMind finalizado com sucesso!")
     print("🎉 ========================================================")
@@ -101,3 +122,4 @@ def animind_pipeline_flow():
 
 if __name__ == "__main__":
     animind_pipeline_flow()
+

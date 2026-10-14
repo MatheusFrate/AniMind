@@ -7,4 +7,6 @@ starlette>=0.27.0
 itsdangerous>=2.1.2
 psycopg2-binary>=2.9.6
 pyspark>=3.4.0
+prefect>=3.0.0
+boto3>=1.34.0
 

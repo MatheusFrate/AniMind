@@ -20,6 +20,19 @@ from extractors.relation_collector.relation_collector import (
     create_data_lake_structure as create_relation_lake_structure,
     run_relation_collector,
 )
+from orchestration.lake_storage import sync_lake_from_cloud, sync_lake_to_cloud
+
+
+@task(name="00 - Sincronizar Bronze do Cloud S3 (Supabase Storage)")
+def task_pull_bronze():
+    """Baixa o estado atual da camada Bronze do storage S3 antes de extrair novos dados."""
+    sync_lake_from_cloud("bronze")
+
+
+@task(name="03 - Enviar Bronze Atualizada para o Cloud S3 (Supabase Storage)")
+def task_push_bronze():
+    """Envia os novos arquivos brutos coletados para persistência durável no bucket S3."""
+    sync_lake_to_cloud("bronze")
 
 
 @task(name="01 - Extrair Catálogo Global MAL (Bronze)", retries=1, retry_delay_seconds=30)
@@ -66,11 +79,17 @@ def catalog_weekly_flow(catalog_batch_size: int = 2000):
     print("📚 Iniciando Ingestão de Catálogo e Relações (Semanal)")
     print("📚 ========================================================")
 
+    # 0. Sincroniza estado anterior da Bronze
+    task_pull_bronze()
+
     # 1. Extrai lotes do catálogo global
     task_extract_catalog(batch_size=catalog_batch_size)
 
     # 2. Extrai relações de animes ativos
     task_extract_relations()
+
+    # 3. Envia novos JSONs para o Supabase Storage S3
+    task_push_bronze()
 
     print("🎉 ========================================================")
     print("🎉 Ingestão Semanal concluída com sucesso!")
