@@ -2,8 +2,8 @@ name: "03 - PySpark Lakehouse & ALS ML Pipeline"
 
 on:
   schedule:
-    # Executa diariamente às 04:00 UTC
-    - cron: '0 4 * * *'
+    # Executa diariamente às 04:12 UTC
+    - cron: '12 4 * * *'
   workflow_dispatch: # Permite disparo manual com 1 clique pelo GitHub
 
 jobs:

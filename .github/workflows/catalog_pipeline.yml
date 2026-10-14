@@ -2,8 +2,8 @@ name: "02 - MAL Catalog & Relations Weekly Flow"
 
 on:
   schedule:
-    # Executa todo domingo às 03:00 UTC
-    - cron: '0 3 * * 0'
+    # Executa todo domingo às 03:12 UTC
+    - cron: '12 3 * * 0'
   workflow_dispatch: # Permite disparo manual com 1 clique pelo GitHub
 
 jobs:
