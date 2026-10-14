@@ -11,19 +11,28 @@ from email.utils import parsedate_to_datetime
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("rss_trigger")
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+_raw_api = os.getenv("API_BASE_URL") or os.getenv("ANIMIND_API_URL") or "http://localhost:8000/api/v1"
+if not _raw_api.endswith("/api/v1"):
+    _raw_api = _raw_api.rstrip("/") + "/api/v1"
+API_BASE_URL = _raw_api
 INTERVAL_MINUTES = int(os.getenv("RSS_TRIGGER_INTERVAL", "15"))
 
 def fetch_active_users():
-    """Busca a lista de usuários ativos na API."""
+    """Busca a lista de usuários ativos na API com retentativas para acordar cold starts."""
     url = f"{API_BASE_URL}/user/active"
-    try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        return response.json()
-    except Exception as e:
-        logger.error(f"Erro ao buscar usuários ativos em {url}: {e}")
-        return []
+    for attempt in range(1, 4):
+        try:
+            logger.info(f"Buscando usuários ativos em {url} (tentativa {attempt}/3)...")
+            response = requests.get(url, timeout=45)
+            response.raise_for_status()
+            users = response.json()
+            logger.info(f"Sucesso: {len(users)} usuários ativos retornados.")
+            return users
+        except Exception as e:
+            logger.warning(f"Tentativa {attempt} falhou ao buscar usuários ativos em {url}: {e}")
+            if attempt < 3:
+                time.sleep(5)
+    return []
 
 def get_latest_rss_pubdate(username):
     """Lê o RSS do usuário e retorna a data do item mais recente como um datetime UTC."""

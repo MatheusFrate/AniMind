@@ -35,5 +35,7 @@ jobs:
           SUPA_LAKE_SECRET_KEY: ${{ secrets.SUPA_LAKE_SECRET_KEY }}
           SUPA_LAKE_BUCKET: ${{ secrets.SUPA_LAKE_BUCKET }}
           CLIENT_ID: ${{ secrets.CLIENT_ID || secrets.MAL_CLIENT_ID }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          ANIMIND_API_URL: ${{ secrets.ANIMIND_API_URL }}
         run: |
           python orchestration/catalog_weekly_flow.py

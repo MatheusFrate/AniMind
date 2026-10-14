@@ -16,7 +16,10 @@ logger = logging.getLogger("relation_collector")
 RAIZ_PROJETO = Path(__file__).resolve().parent.parent.parent
 CAMINHO_ESTADO = RAIZ_PROJETO / "data_lake" / "configs" / "relation_state.json"
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+_raw_api = os.getenv("API_BASE_URL") or os.getenv("ANIMIND_API_URL") or "http://localhost:8000/api/v1"
+if not _raw_api.endswith("/api/v1"):
+    _raw_api = _raw_api.rstrip("/") + "/api/v1"
+API_BASE_URL = _raw_api
 CLIENT_ID = os.getenv("CLIENT_ID") or os.getenv("MAL_CLIENT_ID")
 
 
