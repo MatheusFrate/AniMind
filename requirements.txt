@@ -9,4 +9,7 @@ psycopg2-binary>=2.9.6
 pyspark>=3.4.0
 prefect>=3.0.0
 boto3>=1.34.0
+numpy>=1.24.0
+pandas>=2.0.0
+pyarrow>=12.0.0
 
