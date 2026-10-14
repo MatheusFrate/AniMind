@@ -17,5 +17,5 @@ RUN pip install --no-cache-dir -r requirements.txt numpy pandas
 
 COPY . .
 
-# Comando default, mas pode ser sobrescrito
-CMD ["python", "elt_spark/02_silver_to_gold/process_recommendation_features.py"]
+# Executa o pipeline completo Lakehouse & Machine Learning (Bronze -> Silver -> Gold -> ALS -> Postgres)
+CMD ["python", "orchestration/animind_flow.py"]

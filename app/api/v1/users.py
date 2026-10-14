@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from datetime import datetime
@@ -425,19 +425,6 @@ def compare_users(
         "recommended_for_u1": rec_for_u1,
         "timeline_u1": stats1["timeline"],
         "timeline_u2": stats2["timeline"]
-    }
-
-
-@router.post('/recommendations/spark/train')
-def trigger_spark_recommendations(background_tasks: BackgroundTasks):
-    """
-    Dispara o treinamento do modelo de Recomendação PySpark MLlib (ALS) em background.
-    """
-    from spark_jobs.als_recommendation import run_als_recommendation
-    background_tasks.add_task(run_als_recommendation)
-    return {
-        "message": "Job PySpark MLlib (ALS Collaborative Filtering) disparado em background com sucesso!",
-        "status": "processing"
     }
 
 

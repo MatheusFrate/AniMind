@@ -11,9 +11,22 @@ router = APIRouter()
 
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-REDIRECT_URI = os.getenv("REDIRECT_URI", "http://localhost:8000/api/v1/auth/callback")
 TOKEN_URL = os.getenv("TOKEN_URL", "https://myanimelist.net/v1/oauth2/token")
 AUTH_URL = "https://myanimelist.net/v1/oauth2/authorize"
+
+
+def get_redirect_uri(request: Request = None) -> str:
+    """Retorna o Redirect URI configurado, detectando Render ou o host da requisição atual."""
+    configured = os.getenv("REDIRECT_URI")
+    if configured:
+        return configured
+    render_url = os.getenv("RENDER_EXTERNAL_URL")
+    if render_url:
+        return f"{render_url.rstrip('/')}/api/v1/auth/callback"
+    if request:
+        base_url = str(request.base_url).rstrip('/')
+        return f"{base_url}/api/v1/auth/callback"
+    return "http://localhost:8000/api/v1/auth/callback"
 
 
 def generate_code_verifier() -> str:
@@ -25,12 +38,13 @@ def login(request: Request):
     """Inicia o fluxo OAuth com o MyAnimeList. Acesse uma única vez para autorizar o sistema."""
     code_verifier = generate_code_verifier()
     request.session["code_verifier"] = code_verifier
+    redirect_uri = get_redirect_uri(request)
 
     auth_url = (
         f"{AUTH_URL}"
         f"?response_type=code"
         f"&client_id={CLIENT_ID}"
-        f"&redirect_uri={REDIRECT_URI}"
+        f"&redirect_uri={redirect_uri}"
         f"&code_challenge={code_verifier}"
         f"&code_challenge_method=plain"
     )
@@ -47,13 +61,14 @@ def auth_callback(request: Request, code: str = None):
     if not code_verifier:
         return {"error": "Code verifier não encontrado na sessão. Tente fazer login novamente."}
 
+    redirect_uri = get_redirect_uri(request)
     response = requests.post(TOKEN_URL, data={
         "client_id": CLIENT_ID,
         "client_secret": CLIENT_SECRET,
         "code": code,
         "code_verifier": code_verifier,
         "grant_type": "authorization_code",
-        "redirect_uri": REDIRECT_URI,
+        "redirect_uri": redirect_uri,
     }, timeout=15)
 
     if response.status_code != 200:

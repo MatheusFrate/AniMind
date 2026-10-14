@@ -8,7 +8,7 @@ import dotenv
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-load_dotenv = dotenv.load_dotenv()
+dotenv.load_dotenv()
 RAIZ_PROJETO = Path(__file__).resolve().parent.parent.parent
 CAMINHO_ESTADO = RAIZ_PROJETO / "data_lake" / "configs" / "catalog_state.json"
 CLIENT_ID = os.getenv("CLIENT_ID") or os.getenv("MAL_CLIENT_ID")
@@ -96,6 +96,9 @@ def run_catalog_collector(target_count: int = 1000) -> int:
 
     try:
         # Recupera o último offset salvo em system_state
+        if not CAMINHO_ESTADO.exists():
+            create_data_lake_structure()
+
         with open(CAMINHO_ESTADO, "r") as f:
             state_data = json.load(f)
             last_offset = state_data.get("last_offset", 0)

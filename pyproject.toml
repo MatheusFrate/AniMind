@@ -11,4 +11,4 @@ requires-python = ">=3.10"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["app*", "elt_spark*", "catalog_extractor*", "relation_collector*", "rss_extractor*", "spark_jobs*"]
+include = ["app*", "elt_spark*", "extractors*", "orchestration*"]
