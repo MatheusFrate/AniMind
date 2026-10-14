@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("SUPA_CONNECTION_STRING") or "sqlite:///./animind.db"
+raw_db_url = os.getenv("DATABASE_URL") or os.getenv("SUPA_CONNECTION_STRING") or "sqlite:///./animind.db"
+SQLALCHEMY_DATABASE_URL = raw_db_url.strip()
 if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
     SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
