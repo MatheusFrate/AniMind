@@ -34,6 +34,6 @@ jobs:
           SUPA_LAKE_ACCESS_KEY: ${{ secrets.SUPA_LAKE_ACCESS_KEY }}
           SUPA_LAKE_SECRET_KEY: ${{ secrets.SUPA_LAKE_SECRET_KEY }}
           SUPA_LAKE_BUCKET: ${{ secrets.SUPA_LAKE_BUCKET }}
-          MAL_CLIENT_ID: ${{ secrets.MAL_CLIENT_ID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID || secrets.MAL_CLIENT_ID }}
         run: |
           python orchestration/catalog_weekly_flow.py

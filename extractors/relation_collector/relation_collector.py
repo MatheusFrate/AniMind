@@ -17,7 +17,7 @@ RAIZ_PROJETO = Path(__file__).resolve().parent.parent.parent
 CAMINHO_ESTADO = RAIZ_PROJETO / "data_lake" / "configs" / "relation_state.json"
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_ID = os.getenv("CLIENT_ID") or os.getenv("MAL_CLIENT_ID")
 
 
 def create_data_lake_structure():

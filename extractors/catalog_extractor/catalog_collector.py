@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 load_dotenv = dotenv.load_dotenv()
 RAIZ_PROJETO = Path(__file__).resolve().parent.parent.parent
 CAMINHO_ESTADO = RAIZ_PROJETO / "data_lake" / "configs" / "catalog_state.json"
-CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_ID = os.getenv("CLIENT_ID") or os.getenv("MAL_CLIENT_ID")
 
 def fetch_ranking_page(offset: int, limit: int = 500):
     """Busca uma página de animes do ranking global da API do MAL."""
