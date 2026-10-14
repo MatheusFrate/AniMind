@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
+from pydantic import BaseModel
 
 from app.database import get_db
 from app.models.models import User, UserAnime, Anime
@@ -208,6 +210,54 @@ def get_user_events(
         "total_events": len(results),
         "events": results
     }
+
+
+class WatchEventCreate(BaseModel):
+    anime_id: Optional[int] = None
+    event_type: str
+    description: str
+    created_at: Optional[datetime] = None
+
+
+@router.post('/user/{username}/events/batch')
+def batch_insert_user_events(
+    username: str,
+    events: List[WatchEventCreate],
+    db: Session = Depends(get_db)
+):
+    """
+    Recebe eventos de atividade capturados pelo RSS Trigger e salva no banco de dados.
+    Evita duplicações comparando user_id, description e created_at.
+    """
+    from app.models.models import WatchEvent
+    username = username.strip().lower()
+    user = db.query(User).filter(User.name == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail=f"Usuário '{username}' não encontrado.")
+
+    inserted = 0
+    for ev in events:
+        query = db.query(WatchEvent).filter(
+            WatchEvent.user_id == user.id,
+            WatchEvent.description == ev.description
+        )
+        if ev.created_at:
+            query = query.filter(WatchEvent.created_at == ev.created_at)
+
+        exists = query.first()
+        if not exists:
+            new_event = WatchEvent(
+                user_id=user.id,
+                anime_id=ev.anime_id,
+                event_type=ev.event_type,
+                description=ev.description,
+                created_at=ev.created_at or datetime.now()
+            )
+            db.add(new_event)
+            inserted += 1
+
+    db.commit()
+    return {"status": "success", "inserted": inserted, "total_received": len(events)}
 
 
 @router.get('/compare')

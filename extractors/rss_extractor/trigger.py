@@ -3,6 +3,7 @@ import time
 import requests
 import xml.etree.ElementTree as ET
 import logging
+import re
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 
@@ -103,21 +104,91 @@ def fetch_and_send_news():
     except Exception as e:
         logger.error(f"Erro ao buscar/enviar notícias: {e}")
 
+def fetch_and_send_user_rss_events(username):
+    """
+    Lê o feed RSS de atividades recentes do usuário no MAL (type=rw)
+    e envia os eventos parseados para a API persistir no PostgreSQL.
+    """
+    url = f"https://myanimelist.net/rss.php?type=rw&u={username}"
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+
+        root = ET.fromstring(response.content)
+        events = []
+        user_display = username.capitalize()
+
+        for item in root.findall("./channel/item"):
+            title = item.findtext("title") or ""
+            desc = item.findtext("description") or ""
+            link = item.findtext("link") or ""
+            pubdate = item.findtext("pubDate") or ""
+
+            dt_iso = None
+            if pubdate:
+                try:
+                    dt = parsedate_to_datetime(pubdate)
+                    dt_iso = dt.astimezone(timezone.utc).isoformat()
+                except Exception:
+                    pass
+
+            m_id = re.search(r'/anime/(\d+)', link)
+            anime_id = int(m_id.group(1)) if m_id else None
+            clean_title = re.sub(r' - (TV|Movie|OVA|ONA|Special|TV Special)$', '', title)
+
+            if 'Completed' in desc:
+                event_type = 'COMPLETED'
+                words = desc.split()
+                if len(words) >= 3 and words[1] == '-':
+                    event_desc = f"{user_display} assistiu ao episódio {words[2]} de '{clean_title}' (Completed)"
+                else:
+                    event_desc = f"{user_display} completou '{clean_title}' (Completed)"
+            elif 'Watching' in desc:
+                event_type = 'EPISODE_WATCHED'
+                m_ep = re.search(r'Watching - (\d+)', desc)
+                ep = m_ep.group(1) if m_ep else '?'
+                event_desc = f"{user_display} assistiu ao episódio {ep} de '{clean_title}' (Watching)"
+            elif 'Plan to Watch' in desc:
+                event_type = 'PLAN_TO_WATCH'
+                event_desc = f"{user_display} planeja assistir '{clean_title}' (Plan to Watch)"
+            else:
+                event_type = 'WATCH_EVENT'
+                event_desc = f"{user_display} atualizou '{clean_title}' ({desc})"
+
+            events.append({
+                "anime_id": anime_id,
+                "event_type": event_type,
+                "description": event_desc,
+                "created_at": dt_iso
+            })
+
+        if events:
+            api_url = f"{API_BASE_URL}/user/{username}/events/batch"
+            res = requests.post(api_url, json=events, timeout=15)
+            res.raise_for_status()
+            data = res.json()
+            logger.info(f"[{username}] Processados {len(events)} eventos RSS ({data.get('inserted', 0)} novos inseridos).")
+    except Exception as e:
+        logger.error(f"Erro ao sincronizar eventos RSS de {username}: {e}")
+
 def run_cycle():
     logger.info("Iniciando ciclo de verificação de RSS...")
-    
+
     # 1. Busca e atualiza as notícias globais
     fetch_and_send_news()
-    
+
     # 2. Verifica usuários ativos
     users = fetch_active_users()
-    
+
     for u in users:
         username = u.get("name")
         last_synced_str = u.get("last_synced_at")
-        
+
         if not username:
             continue
+
+        # 2.1 Sincroniza todas as atividades recentes do RSS no banco
+        fetch_and_send_user_rss_events(username)
             
         # Converte a data do banco para UTC (se existir)
         last_synced_dt = None
