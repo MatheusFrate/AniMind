@@ -34,23 +34,47 @@ def sync_catalog_silver_to_postgres(conn, caminho_silver: Path):
             """))
             print("[OK] Tabela 'genres' atualizada com sucesso!")
 
-    # 2. Sincroniza ANIMES
+    # 2. Sincroniza ANIMES (com Studio e Gêneros agregados)
     caminho_animes = caminho_silver / "animes"
     if caminho_animes.exists():
         df_animes = pd.read_parquet(caminho_animes)
+
+        # Agrega Estúdio Principal (via silver/anime_studios e silver/studios)
+        caminho_ast = caminho_silver / "anime_studios"
+        caminho_st = caminho_silver / "studios"
+        if caminho_ast.exists() and caminho_st.exists():
+            df_ast = pd.read_parquet(caminho_ast)
+            df_st = pd.read_parquet(caminho_st)
+            df_ast_st = df_ast.merge(df_st, left_on="studio_id", right_on="id", how="left").drop_duplicates("anime_id")
+            df_animes = df_animes.merge(df_ast_st[["anime_id", "name"]], left_on="id", right_on="anime_id", how="left").rename(columns={"name": "studio"})
+        else:
+            df_animes["studio"] = None
+
+        # Agrega Gêneros como texto separado por vírgula (via silver/anime_genres e silver/genres)
+        caminho_ag = caminho_silver / "anime_genres"
+        if caminho_ag.exists() and caminho_genres.exists():
+            df_ag_all = pd.read_parquet(caminho_ag)
+            df_g_all = pd.read_parquet(caminho_genres)
+            df_ag_merged = df_ag_all.merge(df_g_all, left_on="genre_id", right_on="id")
+            df_genres_str = df_ag_merged.groupby("anime_id")["name"].apply(lambda x: ", ".join(x)).reset_index().rename(columns={"name": "genres"})
+            df_animes = df_animes.merge(df_genres_str, left_on="id", right_on="anime_id", how="left")
+        else:
+            df_animes["genres"] = None
+
         animes_cols = [
             "id", "title", "main_picture", "mean", "rank", "popularity",
-            "num_episodes", "average_episode_duration", "source",
-            "media_type", "synopsis", "num_scoring_users"
+            "num_episodes", "average_episode_duration", "studio", "source",
+            "media_type", "genres", "synopsis", "num_scoring_users"
         ]
         valid_cols = [c for c in animes_cols if c in df_animes.columns]
         df_animes = df_animes[valid_cols].drop_duplicates(["id"])
+
         if len(df_animes) > 0:
-            print(f"[INFO] Salvando {len(df_animes)} animes do catalogo...")
+            print(f"[INFO] Salvando {len(df_animes)} animes do catalogo (com estúdios e gêneros)...")
             df_animes.to_sql("temp_animes", con=conn, if_exists="replace", index=False)
             conn.execute(text("""
-                INSERT INTO animes (id, title, main_picture, mean, rank, popularity, num_episodes, average_episode_duration, source, media_type, synopsis, num_scoring_users)
-                SELECT id, title, main_picture, mean, rank, popularity, num_episodes, average_episode_duration, source, media_type, synopsis, num_scoring_users
+                INSERT INTO animes (id, title, main_picture, mean, rank, popularity, num_episodes, average_episode_duration, studio, source, media_type, genres, synopsis, num_scoring_users)
+                SELECT id, title, main_picture, mean, rank, popularity, num_episodes, average_episode_duration, studio, source, media_type, genres, synopsis, num_scoring_users
                 FROM temp_animes
                 ON CONFLICT (id) DO UPDATE SET
                     title = EXCLUDED.title,
@@ -60,13 +84,16 @@ def sync_catalog_silver_to_postgres(conn, caminho_silver: Path):
                     popularity = EXCLUDED.popularity,
                     num_episodes = EXCLUDED.num_episodes,
                     average_episode_duration = EXCLUDED.average_episode_duration,
+                    studio = EXCLUDED.studio,
                     source = EXCLUDED.source,
                     media_type = EXCLUDED.media_type,
+                    genres = EXCLUDED.genres,
                     synopsis = EXCLUDED.synopsis,
                     num_scoring_users = EXCLUDED.num_scoring_users;
                 DROP TABLE temp_animes;
             """))
-            print("[OK] Tabela 'animes' atualizada com sucesso!")
+            print("[OK] Tabela 'animes' atualizada com sucesso (estúdios e gêneros preenchidos)!")
+
 
     # 3. Sincroniza ANIME_GENRES
     caminho_ag = caminho_silver / "anime_genres"
