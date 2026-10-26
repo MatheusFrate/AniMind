@@ -163,32 +163,12 @@ def semantic_search_animes(
     query_vec = embed_query(query)
     vec_literal = "[" + ",".join(f"{v:.6f}" for v in query_vec) + "]"
 
-    filters = ["1=1"]
     params: Dict[str, Any] = {
         "query_vec": vec_literal,
         "limit": limit,
     }
 
-    if min_mal_score is not None and min_mal_score > 0:
-        filters.append("a.mean >= :min_mal_score")
-        params["min_mal_score"] = min_mal_score
-
-    if exclude_user:
-        params["exclude_user"] = exclude_user.strip().lower()
-        filters.append("""
-            NOT EXISTS (
-                SELECT 1
-                FROM user_animes ua
-                JOIN users u ON u.id = ua.user_id
-                WHERE LOWER(u.name) = :exclude_user
-                  AND ua.anime_id = a.id
-                  AND ua.status IN ('completed', 'watching', 'on_hold', 'dropped')
-            )
-        """)
-
-    where_clause = " AND ".join(filters)
-
-    sql = text(f"""
+    sql_query = """
         SELECT
             a.id,
             a.title,
@@ -204,10 +184,32 @@ def semantic_search_animes(
             ROUND(((1 - (ae.embedding <=> CAST(:query_vec AS vector))) * 100)::numeric, 1) AS similarity_pct
         FROM anime_embeddings ae
         JOIN animes a ON a.id = ae.anime_id
-        WHERE {where_clause}
+        WHERE 1=1
+    """
+
+    if min_mal_score is not None and min_mal_score > 0:
+        sql_query += " AND a.mean >= :min_mal_score"
+        params["min_mal_score"] = min_mal_score
+
+    if exclude_user:
+        params["exclude_user"] = exclude_user.strip().lower()
+        sql_query += """
+            AND NOT EXISTS (
+                SELECT 1
+                FROM user_animes ua
+                JOIN users u ON u.id = ua.user_id
+                WHERE LOWER(u.name) = :exclude_user
+                  AND ua.anime_id = a.id
+                  AND ua.status IN ('completed', 'watching', 'on_hold', 'dropped')
+            )
+        """
+
+    sql_query += """
         ORDER BY ae.embedding <=> CAST(:query_vec AS vector) ASC
         LIMIT :limit
-    """)
+    """
+
+    sql = text(sql_query)
 
     rows = db.execute(sql, params).mappings().all()
     results = []
