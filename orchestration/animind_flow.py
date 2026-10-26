@@ -29,6 +29,17 @@ def task_push_lake():
     sync_lake_to_cloud()
 
 
+@task(name="06 - Indexação Vetorial Incremental RAG (Gemini -> pgvector)")
+def task_vector_indexing():
+    """Vetoriza incrementalmente até 800 novos animes por dia (respeitando os limites 80 RPM / 20K TPM / 800 RPD do Free Tier)."""
+    from app.services.rag_service import get_gemini_api_key
+    if not get_gemini_api_key():
+        print("ℹ️ [Task] GEMINI_API_KEY ausente no ambiente. Pulando indexação vetorial incremental.")
+        return
+    from extractors.rag_indexer.index_animes import run_anime_vector_indexing
+    run_anime_vector_indexing(max_items=800, batch_size=80, sleep_between_batches=62.0)
+
+
 @task(name="01 - Bronze to Silver (Catálogo, Relações e Usuários)", retries=1, retry_delay_seconds=10)
 def task_bronze_to_silver():
     """Lê os JSONs brutos da Bronze e gera as tabelas normalizadas em Parquet na Silver."""
@@ -114,6 +125,9 @@ def animind_pipeline_flow():
 
     # 5. Envia camadas atualizadas para o Supabase Storage S3
     task_push_lake()
+
+    # 6. Atualiza índice vetorial RAG incrementalmente (lote diário seguro para o Free Tier)
+    task_vector_indexing()
 
     print("🎉 ========================================================")
     print("🎉 Pipeline AniMind finalizado com sucesso!")

@@ -40,5 +40,6 @@ jobs:
           SUPA_LAKE_ACCESS_KEY: ${{ secrets.SUPA_LAKE_ACCESS_KEY }}
           SUPA_LAKE_SECRET_KEY: ${{ secrets.SUPA_LAKE_SECRET_KEY }}
           SUPA_LAKE_BUCKET: ${{ secrets.SUPA_LAKE_BUCKET }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python orchestration/animind_flow.py

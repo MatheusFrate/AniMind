@@ -12,7 +12,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.database import Base, engine
 from app.models import models
-from app.api.v1 import users, auth, anime_list, news, recommendations
+from app.api.v1 import users, auth, anime_list, news, recommendations, rag
 
 load_dotenv()
 
@@ -22,7 +22,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title='AniMind Data Platform',
     description='Plataforma de Dados de Animes com Ingestão ETL e Sincronização MyAnimeList',
-    version='2.0.0'
+    version='2.1.0'
 )
 
 # Middleware de Sessão (necessário para o fluxo OAuth)
@@ -35,7 +35,7 @@ app.include_router(anime_list.router, prefix="/api/v1", tags=["Sincronização M
 app.include_router(users.router, prefix="/api/v1", tags=["Estatísticas e Usuários"])
 app.include_router(news.router, prefix="/api/v1", tags=["RSS News & ETL"])
 app.include_router(recommendations.router, prefix="/api/v1/recommendations", tags=["Recomendações (Machine Learning)"])
-
+app.include_router(rag.router, prefix="/api/v1/rag", tags=["Busca Semântica & RAG (IA)"])
 
 
 # Arquivos estáticos e Dashboard Frontend
@@ -59,5 +59,3 @@ def dashboard():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
-
-
