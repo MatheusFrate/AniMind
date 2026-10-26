@@ -8,7 +8,7 @@ load_dotenv()
 db_url = os.getenv("DATABASE_URL", "").strip()
 supa_url = os.getenv("SUPA_CONNECTION_STRING", "").strip()
 
-if supa_url and (not db_url or "localhost" in db_url or "127.0.0.1" in db_url):
+if supa_url and (not db_url or "localhost" in db_url or "127.0.0.1" in db_url or "@db:" in db_url):
     raw_db_url = supa_url
 else:
     raw_db_url = db_url or supa_url or "sqlite:///./animind.db"

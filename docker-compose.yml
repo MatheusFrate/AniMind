@@ -28,7 +28,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://animind_user:animind_password@db:5432/animind_db
+      - DATABASE_URL=${SUPA_CONNECTION_STRING:-postgresql://animind_user:animind_password@db:5432/animind_db}
+      - SUPA_CONNECTION_STRING=${SUPA_CONNECTION_STRING}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - CLIENT_ID=${CLIENT_ID}
       - CLIENT_SECRET=${CLIENT_SECRET}
       - REDIRECT_URI=${REDIRECT_URI:-http://localhost:8000/api/v1/auth/callback}
