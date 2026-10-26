@@ -349,8 +349,126 @@
       color: white; box-shadow: 0 2px 10px rgba(139,92,246,0.35);
     }
     .tab-btn:not(.active):hover { color: var(--text-main); background: rgba(255,255,255,0.05); }
-    .tab-panel { display: none; }
+    .tab-panel { display: none; margin-bottom: 2.25rem; }
     .tab-panel.active { display: block; }
+
+    /* ── Collapsible Sections ────────────────── */
+    .collapsible-header {
+      cursor: pointer;
+      user-select: none;
+    }
+    .collapse-btn {
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: var(--text-main);
+      padding: 0.38rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+    .collapse-btn:hover {
+      background: rgba(139, 92, 246, 0.25);
+      border-color: var(--accent-purple);
+    }
+    .collapsible-body {
+      transition: opacity 0.2s ease;
+    }
+    .collapsible-body.collapsed {
+      display: none !important;
+    }
+
+    /* ── RAG Semantic Search Cards ───────────── */
+    .rag-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.15rem;
+    }
+    .rag-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.85rem;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .rag-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent-purple);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .rag-card-top {
+      display: flex;
+      gap: 0.95rem;
+      align-items: flex-start;
+      min-height: 122px;
+    }
+    .rag-card-poster {
+      width: 82px;
+      height: 118px;
+      object-fit: cover;
+      border-radius: 9px;
+      background: #1e293b;
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .rag-card-meta {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.32rem;
+    }
+    .rag-card-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      line-height: 1.3;
+      color: var(--text-main);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .rag-card-title:hover { color: var(--accent-purple); }
+    .rag-genre-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      margin-top: 0.15rem;
+    }
+    .rag-genre-pill {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.14rem 0.5rem;
+      border-radius: 6px;
+      background: rgba(139, 92, 246, 0.14);
+      color: #c4b5fd;
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      white-space: nowrap;
+    }
+    .rag-card-synopsis {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      border-top: 1px solid var(--card-border);
+      padding-top: 0.7rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .rag-card-synopsis.expanded {
+      display: block;
+      -webkit-line-clamp: unset;
+    }
 
     /* ── Heatmap ─────────────────────────────── */
     .heatmap-wrap { overflow-x: auto; padding-bottom: 0.5rem; }
@@ -807,7 +925,7 @@
           <button class="tab-btn" id="tab-heatmap" onclick="switchTab('heatmap')">🗓️ Heatmap</button>
           <button class="tab-btn" id="tab-compare" onclick="switchTab('compare')">⚔️ Comparar Perfis</button>
           <button class="tab-btn" id="tab-sequels" onclick="switchTab('sequels')">🔗 Continuações</button>
-          <button class="tab-btn" id="tab-rag" onclick="switchTab('rag')">🧠 Busca Semântica (RAG)</button>
+          <button class="tab-btn" id="tab-rag" onclick="switchTab('rag')">🤖 Recomendações (IA)</button>
         </div>
 
         <div style="display: flex; align-items: center; gap: 0.6rem; background: var(--card-bg); border: 1px solid var(--card-border); padding: 0.4rem 0.85rem; border-radius: 12px; font-size: 0.82rem;">
@@ -892,13 +1010,60 @@
       </div>
 
       <!-- Row 4: Insights Cards -->
-      <div class="chart-card" style="margin-bottom:0;">
+      <div class="chart-card" style="margin-bottom: 2rem;">
         <div class="card-header">
           <div class="card-title">⚡ Insights Pessoais</div>
           <span class="card-subtitle">calculado da sua lista</span>
         </div>
         <div class="insights-grid" id="insightsGrid">
           <div style="color:var(--text-muted);font-size:.85rem;">Sincronize sua lista para ver os insights.</div>
+        </div>
+      </div>
+
+      <!-- Anime Library (Dentro da aba Visão Geral, recolhível) -->
+      <div class="table-card">
+        <div class="card-header collapsible-header" onclick="toggleSection('librarySectionBody', 'libraryCollapseBtn')" style="margin-bottom: 0;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <div class="card-title">📚 Biblioteca de Animes</div>
+            <span class="library-count" id="libraryCount"></span>
+          </div>
+          <button type="button" class="collapse-btn" id="libraryCollapseBtn" onclick="event.stopPropagation(); toggleSection('librarySectionBody', 'libraryCollapseBtn')">
+            Recolher ▲
+          </button>
+        </div>
+
+        <div id="librarySectionBody" class="collapsible-body" style="margin-top: 1.25rem;">
+          <!-- Search + Sort Controls -->
+          <div class="library-controls">
+            <input type="text" id="filterTitle" class="library-search" placeholder="🔍 Buscar por título..." oninput="renderAnimeGrid()">
+            <select id="sortField" class="sort-select" onchange="renderAnimeGrid()">
+              <option value="title">Ordenar: Título A→Z</option>
+              <option value="score">Ordenar: Nota</option>
+              <option value="episodes">Ordenar: Episódios</option>
+              <option value="finish_date">Ordenar: Data de Conclusão</option>
+              <option value="global_mean">Ordenar: Nota Global MAL</option>
+            </select>
+            <select id="libraryLimit" class="sort-select" onchange="renderAnimeGrid()" title="Quantidade máxima de cards exibidos">
+              <option value="24">Exibir: 24 cards</option>
+              <option value="60" selected>Exibir: 60 cards</option>
+              <option value="120">Exibir: 120 cards</option>
+              <option value="0">Exibir: Todos</option>
+            </select>
+            <button class="sort-dir-btn" id="sortDirBtn" onclick="toggleSortDir()" title="Inverter ordenação">↓</button>
+          </div>
+
+          <!-- Status Filter -->
+          <div class="filters-row">
+            <button class="filter-btn active" onclick="setFilter('all', this)">Todos</button>
+            <button class="filter-btn" onclick="setFilter('watching', this)">Assistindo</button>
+            <button class="filter-btn" onclick="setFilter('completed', this)">Completados</button>
+            <button class="filter-btn" onclick="setFilter('on_hold', this)">Em Pausa</button>
+            <button class="filter-btn" onclick="setFilter('dropped', this)">Desistidos</button>
+            <button class="filter-btn" onclick="setFilter('plan_to_watch', this)">Planeja Assistir</button>
+            <button class="filter-btn" onclick="setFilter('rewatching', this)">🔁 Reassistindo</button>
+          </div>
+
+          <div class="anime-grid" id="animeGrid"></div>
         </div>
       </div>
 
@@ -988,112 +1153,93 @@
 
       </div><!-- /panel-sequels -->
 
-      <!-- TAB: Busca Semântica (RAG / Vector Search) -->
+      <!-- TAB: Recomendações (IA: Busca Semântica RAG + Filtro Colaborativo ALS) -->
       <div class="tab-panel" id="panel-rag">
-        <div class="chart-card" style="margin-bottom: 1.5rem; border-color: rgba(139,92,246,0.4);">
-          <div class="card-header" style="flex-wrap: wrap; gap: 0.75rem;">
+        <!-- 1. Busca Semântica (RAG) -->
+        <div class="table-card" style="margin-bottom: 2rem; border-color: rgba(139,92,246,0.4);">
+          <div class="card-header collapsible-header" onclick="toggleSection('ragSectionBody', 'ragCollapseBtn')" style="flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0;">
             <div>
               <div class="card-title">🧠 Recomendador Semântico — Natural Language Anime Search</div>
               <div class="card-subtitle" style="margin-top:0.25rem;">
                 Descreva a atmosfera, temas ou enredo em linguagem natural. A busca por similaridade de cosseno (Gemini Embeddings + Supabase pgvector) encontra obras pela essência!
               </div>
             </div>
-            <span class="library-count" id="ragIndexStatus" style="font-size: 0.78rem; color: var(--accent-cyan);">Verificando índice vetorial...</span>
-          </div>
-
-          <div style="display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap;">
-            <input
-              type="text"
-              id="ragQueryInput"
-              class="library-search"
-              style="flex: 1; min-width: 260px; font-size: 0.95rem; padding: 0.85rem 1.1rem;"
-              placeholder="Ex: Animes com atmosfera melancólica e cyberpunk dos anos 90 onde o protagonista lida com isolamento social..."
-              onkeydown="if(event.key==='Enter') runSemanticSearch()"
-            >
-            <button class="btn" id="ragSearchBtn" onclick="runSemanticSearch()" style="padding: 0.85rem 1.6rem;">
-              <span id="ragSearchBtnText">✨ Buscar por Semântica</span>
-            </button>
-          </div>
-
-          <!-- Filtros opcionais da busca semântica -->
-          <div style="display: flex; align-items: center; gap: 1.5rem; margin-top: 0.9rem; flex-wrap: wrap; font-size: 0.84rem; color: var(--text-muted);">
-            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
-              <input type="checkbox" id="ragExcludeWatched" checked style="accent-color: var(--accent-purple); width: 16px; height: 16px;">
-              <span>Ocultar animes que <strong id="ragExcludeUserLabel" style="color: var(--text-main);">o perfil atual</strong> já assistiu</span>
-            </label>
-
-            <div style="display: flex; align-items: center; gap: 0.45rem;">
-              <span>Nota mínima MAL:</span>
-              <select id="ragMinScore" class="sort-select" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; margin: 0;">
-                <option value="">Qualquer nota</option>
-                <option value="7.0" selected>⭐ 7.0+</option>
-                <option value="7.5">⭐ 7.5+</option>
-                <option value="8.0">⭐ 8.0+</option>
-              </select>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span class="library-count" id="ragIndexStatus" style="font-size: 0.78rem; color: var(--accent-cyan);">Verificando índice vetorial...</span>
+              <button type="button" class="collapse-btn" id="ragCollapseBtn" onclick="event.stopPropagation(); toggleSection('ragSectionBody', 'ragCollapseBtn')">
+                Recolher ▲
+              </button>
             </div>
           </div>
 
-          <!-- Sugestões de busca clicáveis -->
-          <div class="sequels-filters" style="margin-top: 1rem;">
-            <button class="sequel-chip" onclick="setRagExamplePrompt('Animes com atmosfera melancólica e cyberpunk dos anos 90 onde o protagonista lida com isolamento social')">🌆 Cyberpunk Melancólico Anos 90</button>
-            <button class="sequel-chip" onclick="setRagExamplePrompt('Suspense psicológico intenso sobre viagem no tempo e consequências trágicas de mudar o passado')">⏳ Thriller de Viagem no Tempo</button>
-            <button class="sequel-chip" onclick="setRagExamplePrompt('Jornada filosófica e contemplativa em um mundo pós-apocalíptico silencioso')">🌿 Pós-Apocalíptico Contemplativo</button>
-            <button class="sequel-chip" onclick="setRagExamplePrompt('Comédia romântica madura entre adultos no ambiente de trabalho ou faculdade sem clichês escolares')">💼 Romance Maduro sem Clichês</button>
+          <div id="ragSectionBody" class="collapsible-body" style="margin-top: 1.1rem;">
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <input
+                type="text"
+                id="ragQueryInput"
+                class="library-search"
+                style="flex: 1; min-width: 260px; font-size: 0.95rem; padding: 0.85rem 1.1rem;"
+                placeholder="Ex: Animes com atmosfera melancólica e cyberpunk dos anos 90 onde o protagonista lida com isolamento social..."
+                onkeydown="if(event.key==='Enter') runSemanticSearch()"
+              >
+              <button class="btn" id="ragSearchBtn" onclick="runSemanticSearch()" style="padding: 0.85rem 1.6rem;">
+                <span id="ragSearchBtnText">✨ Buscar por Semântica</span>
+              </button>
+            </div>
+
+            <!-- Filtros opcionais da busca semântica -->
+            <div style="display: flex; align-items: center; gap: 1.5rem; margin-top: 0.9rem; flex-wrap: wrap; font-size: 0.84rem; color: var(--text-muted);">
+              <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+                <input type="checkbox" id="ragExcludeWatched" checked style="accent-color: var(--accent-purple); width: 16px; height: 16px;">
+                <span>Ocultar animes que <strong id="ragExcludeUserLabel" style="color: var(--text-main);">o perfil atual</strong> já assistiu</span>
+              </label>
+
+              <div style="display: flex; align-items: center; gap: 0.45rem;">
+                <span>Nota mínima MAL:</span>
+                <select id="ragMinScore" class="sort-select" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; margin: 0;">
+                  <option value="">Qualquer nota</option>
+                  <option value="7.0" selected>⭐ 7.0+</option>
+                  <option value="7.5">⭐ 7.5+</option>
+                  <option value="8.0">⭐ 8.0+</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Sugestões de busca clicáveis -->
+            <div class="sequels-filters" style="margin-top: 1rem; margin-bottom: 1.25rem;">
+              <button class="sequel-chip" onclick="setRagExamplePrompt('Animes com atmosfera melancólica e cyberpunk dos anos 90 onde o protagonista lida com isolamento social')">🌆 Cyberpunk Melancólico Anos 90</button>
+              <button class="sequel-chip" onclick="setRagExamplePrompt('Suspense psicológico intenso sobre viagem no tempo e consequências trágicas de mudar o passado')">⏳ Thriller de Viagem no Tempo</button>
+              <button class="sequel-chip" onclick="setRagExamplePrompt('Jornada filosófica e contemplativa em um mundo pós-apocalíptico silencioso')">🌿 Pós-Apocalíptico Contemplativo</button>
+              <button class="sequel-chip" onclick="setRagExamplePrompt('Comédia romântica madura entre adultos no ambiente de trabalho ou faculdade sem clichês escolares')">💼 Romance Maduro sem Clichês</button>
+            </div>
+
+            <div id="ragResultsGrid" class="rag-grid">
+              <div class="compare-state" style="grid-column: 1 / -1;">
+                <div class="icon">🧠</div>
+                <div>Digite uma descrição livre acima ou clique em um dos exemplos para buscar no espaço vetorial!</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div id="ragResultsGrid" class="sequels-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
-          <div class="compare-state" style="grid-column: 1 / -1;">
-            <div class="icon">🧠</div>
-            <div>Digite uma descrição livre acima ou clique em um dos exemplos para buscar no espaço vetorial!</div>
+        <!-- 2. 🤖 IA Recommendations (Filtro Colaborativo ALS) -->
+        <div class="table-card" style="border-color: var(--accent-purple); box-shadow: 0 0 20px rgba(139,92,246,0.15);">
+          <div class="card-header collapsible-header" onclick="toggleSection('iaSectionBody', 'iaCollapseBtn')" style="margin-bottom: 0;">
+            <div>
+              <div class="card-title">🤖 Descobertas e Recomendações (IA — Filtro Colaborativo ALS)</div>
+              <span class="card-subtitle">Universos novos calculados com base nas notas da sua lista</span>
+            </div>
+            <button type="button" class="collapse-btn" id="iaCollapseBtn" onclick="event.stopPropagation(); toggleSection('iaSectionBody', 'iaCollapseBtn')">
+              Recolher ▲
+            </button>
+          </div>
+          <div id="iaSectionBody" class="collapsible-body" style="margin-top: 1.25rem;">
+            <div id="iaLoader" style="color:var(--text-muted);font-size:0.9rem;display:none;">Calculando afinidades...</div>
+            <div id="iaError" style="color:#ef4444;font-size:0.9rem;display:none;"></div>
+            <div id="iaRecsGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:1.25rem;"></div>
           </div>
         </div>
       </div><!-- /panel-rag -->
-
-      <!-- 🤖 IA Recommendations -->
-      <div class="table-card" style="margin-bottom: 2rem; border-color: var(--accent-purple); box-shadow: 0 0 20px rgba(139,92,246,0.15);">
-        <div class="card-header">
-          <div class="card-title">🤖 Descobertas e Recomendações (IA)</div>
-          <span class="card-subtitle">Universos novos calculados com base no seu gosto!</span>
-        </div>
-        <div id="iaLoader" style="color:var(--text-muted);font-size:0.9rem;display:none;">Calculando afinidades...</div>
-        <div id="iaError" style="color:#ef4444;font-size:0.9rem;display:none;"></div>
-        <div id="iaRecsGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:1.5rem;"></div>
-      </div>
-
-      <!-- Anime Library -->
-      <div class="table-card">
-        <div class="card-header">
-          <div class="card-title">Biblioteca de Animes</div>
-          <span class="library-count" id="libraryCount"></span>
-        </div>
-
-        <!-- Search + Sort Controls -->
-        <div class="library-controls">
-          <input type="text" id="filterTitle" class="library-search" placeholder="🔍 Buscar por título..." oninput="renderAnimeGrid()">
-          <select id="sortField" class="sort-select" onchange="renderAnimeGrid()">
-            <option value="title">Ordenar: Título A→Z</option>
-            <option value="score">Ordenar: Nota</option>
-            <option value="episodes">Ordenar: Episódios</option>
-            <option value="finish_date">Ordenar: Data de Conclusão</option>
-            <option value="global_mean">Ordenar: Nota Global MAL</option>
-          </select>
-          <button class="sort-dir-btn" id="sortDirBtn" onclick="toggleSortDir()" title="Inverter ordenação">↓</button>
-        </div>
-
-        <!-- Status Filter -->
-        <div class="filters-row">
-          <button class="filter-btn active" onclick="setFilter('all', this)">Todos</button>
-          <button class="filter-btn" onclick="setFilter('watching', this)">Assistindo</button>
-          <button class="filter-btn" onclick="setFilter('completed', this)">Completados</button>
-          <button class="filter-btn" onclick="setFilter('on_hold', this)">Em Pausa</button>
-          <button class="filter-btn" onclick="setFilter('dropped', this)">Desistidos</button>
-          <button class="filter-btn" onclick="setFilter('plan_to_watch', this)">Planeja Assistir</button>
-          <button class="filter-btn" onclick="setFilter('rewatching', this)">🔁 Reassistindo</button>
-        </div>
-
-        <div class="anime-grid" id="animeGrid"></div>
-      </div>
 
     </div>
   </div>
@@ -1109,13 +1255,29 @@
     let sequelsLoaded = false;  // evita refetch desnecessário
 
 
-    // ── Tab system ───────────────────────────────
+    // ── Collapsible sections & Tab system ────────
+    function toggleSection(bodyId, btnId, forceCollapse = null) {
+      const body = document.getElementById(bodyId);
+      const btn = document.getElementById(btnId);
+      if (!body || !btn) return;
+      const shouldCollapse = forceCollapse !== null ? forceCollapse : !body.classList.contains('collapsed');
+      if (shouldCollapse) {
+        body.classList.add('collapsed');
+        btn.innerHTML = 'Expandir ▼';
+      } else {
+        body.classList.remove('collapsed');
+        btn.innerHTML = 'Recolher ▲';
+      }
+    }
+
     function switchTab(name) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       document.getElementById('tab-' + name).classList.add('active');
       document.getElementById('panel-' + name).classList.add('active');
+
       if (name === 'heatmap' && allAnimeItems.length > 0) renderHeatmap(allAnimeItems);
+      if (name === 'compare') switchTabCompare();
       if (name === 'sequels' && activeUsername && !sequelsLoaded) loadSequels(activeUsername);
       if (name === 'rag') {
         if (activeUsername) {
@@ -1305,13 +1467,15 @@
         }
 
         grid.innerHTML = data.recommendations.map(a => `
-          <div style="background:var(--bg-dark);border:1px solid var(--card-border);border-radius:12px;overflow:hidden;position:relative;transition:transform 0.2s;box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-            <div style="position:absolute;top:8px;left:8px;background:rgba(139,92,246,0.9);color:white;padding:2px 8px;border-radius:6px;font-size:0.8rem;font-weight:700;">#${a.rank}</div>
-            <img src="${a.main_picture}" alt="${a.title}" style="width:100%;height:250px;object-fit:cover;" onerror="this.style.background='#1e293b'">
-            <div style="padding:1rem;">
-              <a href="https://myanimelist.net/anime/${a.anime_id}" target="_blank" style="font-weight:600;font-size:0.95rem;margin-bottom:0.4rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:white;text-decoration:none;">${a.title}</a>
-              <div style="color:var(--accent-pink);font-size:0.85rem;font-weight:700;">🔮 Match: ${a.predicted_score}</div>
-              <div style="color:var(--text-muted);font-size:0.75rem;margin-top:0.2rem;">⭐ Média MAL: ${a.global_mal_mean || '-'}</div>
+          <div style="background:var(--bg-dark);border:1px solid var(--card-border);border-radius:12px;overflow:hidden;position:relative;transition:transform 0.2s, border-color 0.2s;box-shadow: 0 4px 12px rgba(0,0,0,0.3);display:flex;flex-direction:column;" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='var(--accent-purple)'" onmouseout="this.style.transform='none';this.style.borderColor='var(--card-border)'">
+            <div style="position:absolute;top:8px;left:8px;background:rgba(139,92,246,0.92);color:white;padding:2px 8px;border-radius:6px;font-size:0.78rem;font-weight:700;backdrop-filter:blur(4px);">#${a.rank}</div>
+            <img src="${a.main_picture}" alt="${a.title}" style="width:100%;height:240px;object-fit:cover;background:#1e293b;" onerror="this.style.background='#1e293b'">
+            <div style="padding:0.9rem;display:flex;flex-direction:column;flex:1;justify-content:space-between;">
+              <a href="https://myanimelist.net/anime/${a.anime_id}" target="_blank" style="font-weight:600;font-size:0.92rem;line-height:1.3;min-height:2.4rem;margin-bottom:0.45rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:white;text-decoration:none;">${a.title}</a>
+              <div>
+                <div style="color:var(--accent-pink);font-size:0.84rem;font-weight:700;">🔮 Match: ${a.predicted_score}</div>
+                <div style="color:var(--text-muted);font-size:0.75rem;margin-top:0.2rem;">⭐ Média MAL: ${a.global_mal_mean || '-'}</div>
+              </div>
             </div>
           </div>
         `).join('');
@@ -1629,7 +1793,13 @@
       });
 
       const sorted = sortItems(filtered);
-      document.getElementById('libraryCount').innerText = `${sorted.length} de ${allAnimeItems.length} animes`;
+      const limitSelect = document.getElementById('libraryLimit');
+      const limitVal = limitSelect ? parseInt(limitSelect.value, 10) : 60;
+      const visibleItems = limitVal > 0 ? sorted.slice(0, limitVal) : sorted;
+
+      document.getElementById('libraryCount').innerText = limitVal > 0 && sorted.length > limitVal
+        ? `Exibindo ${visibleItems.length} de ${sorted.length} animes (${allAnimeItems.length} na lista)`
+        : `${sorted.length} de ${allAnimeItems.length} animes`;
 
       if (sorted.length === 0) {
         grid.innerHTML = '<div style="color:var(--text-muted);grid-column:1/-1;padding:2rem 0;text-align:center;">Nenhum anime encontrado.</div>';
@@ -1657,7 +1827,7 @@
         return new Date(d + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
       };
 
-      grid.innerHTML = sorted.map((anime, i) => {
+      const cardsHtml = visibleItems.map((anime, i) => {
         const sColor = statusColors[anime.user_status] || '#94a3b8';
         const sLabel = statusLabels[anime.user_status] || anime.user_status || '—';
         const rewatch = anime.is_rewatching || (anime.num_times_rewatched && anime.num_times_rewatched > 0);
@@ -1744,6 +1914,16 @@
             </div>
           </div>`;
       }).join('');
+
+      const showMoreHtml = (limitVal > 0 && sorted.length > limitVal) ? `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 1.25rem 0 0.5rem;">
+          <button type="button" class="collapse-btn" style="padding: 0.65rem 1.4rem; font-size: 0.88rem;" onclick="document.getElementById('libraryLimit').value='0'; renderAnimeGrid();">
+            ➕ Mostrar todos os ${sorted.length} animes
+          </button>
+        </div>
+      ` : '';
+
+      grid.innerHTML = cardsHtml + showMoreHtml;
     }
 
     function toggleFlip(id) {
@@ -2084,17 +2264,6 @@
       // Update label for user1 when tab is opened
       const lbl = document.getElementById('compareUser1Label');
       if (lbl && activeUsername) lbl.textContent = activeUsername;
-    }
-
-    // Override switchTab to hook into compare tab
-    const _origSwitchTab = switchTab;
-    function switchTab(name) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById('tab-' + name).classList.add('active');
-      document.getElementById('panel-' + name).classList.add('active');
-      if (name === 'heatmap' && allAnimeItems.length > 0) renderHeatmap(allAnimeItems);
-      if (name === 'compare') switchTabCompare();
     }
 
     async function runCompare() {
@@ -2460,37 +2629,41 @@
 
         grid.innerHTML = items.map((item, idx) => {
           const pic = item.main_picture || 'https://via.placeholder.com/160x220?text=?';
-          const synopsisShort = item.synopsis
-            ? (item.synopsis.length > 220 ? item.synopsis.slice(0, 220) + '...' : item.synopsis)
-            : 'Sem sinopse disponível.';
+          const synopsisText = item.synopsis || 'Sem sinopse disponível.';
+          const genreList = (item.genres || '').split(',').map(g => g.trim()).filter(Boolean);
+          const visibleGenres = genreList.slice(0, 3);
+          const extraGenres = genreList.length - visibleGenres.length;
+          const genrePillsHtml = visibleGenres.map(g => `<span class="rag-genre-pill">${g}</span>`).join('')
+            + (extraGenres > 0 ? `<span class="rag-genre-pill" title="${genreList.slice(3).join(', ')}">+${extraGenres}</span>` : '');
+
           return `
-            <div class="sequel-card" style="flex-direction: column; padding: 1rem; gap: 0.75rem;">
-              <div style="display: flex; gap: 0.9rem;">
+            <div class="rag-card">
+              <div class="rag-card-top">
                 <a href="https://myanimelist.net/anime/${item.anime_id}" target="_blank" rel="noopener">
-                  <img src="${pic}" alt="${item.title}" style="width: 78px; height: 112px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">
+                  <img src="${pic}" alt="${item.title}" class="rag-card-poster" loading="lazy" onerror="this.style.background='#1e293b'">
                 </a>
-                <div style="flex: 1; min-width: 0;">
-                  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.3rem;">
-                    <span class="relation-badge sequel" style="background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3);">
+                <div class="rag-card-meta">
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                    <span class="relation-badge sequel" style="background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); font-size: 0.74rem; padding: 0.15rem 0.55rem; border-radius: 6px; font-weight: 700;">
                       🎯 ${item.similarity_pct}% Match
                     </span>
                     <span style="font-size: 0.78rem; color: var(--warning); font-weight: 700;">
                       ⭐ ${item.mean ? item.mean.toFixed(2) : 'N/A'}
                     </span>
                   </div>
-                  <a href="https://myanimelist.net/anime/${item.anime_id}" target="_blank" rel="noopener" style="text-decoration: none; color: var(--text-main);">
-                    <div style="font-weight: 700; font-size: 0.95rem; line-height: 1.3; margin-bottom: 0.3rem;">#${idx + 1} ${item.title}</div>
+                  <a href="https://myanimelist.net/anime/${item.anime_id}" target="_blank" rel="noopener" style="text-decoration: none;">
+                    <div class="rag-card-title" title="${item.title}">#${idx + 1} ${item.title}</div>
                   </a>
-                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+                  <div style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     🎬 ${item.studio || 'Estúdio N/A'} · ${item.media_type ? item.media_type.toUpperCase() : 'TV'} ${item.num_episodes ? `(${item.num_episodes} eps)` : ''}
                   </div>
-                  <div style="font-size: 0.73rem; color: var(--accent-purple); font-weight: 600;">
-                    ${item.genres || ''}
+                  <div class="rag-genre-pills">
+                    ${genrePillsHtml}
                   </div>
                 </div>
               </div>
-              <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; border-top: 1px solid var(--card-border); padding-top: 0.6rem;">
-                ${synopsisShort}
+              <div class="rag-card-synopsis" onclick="this.classList.toggle('expanded')" title="Clique para expandir ou recolher a sinopse">
+                ${synopsisText}
               </div>
             </div>
           `;
