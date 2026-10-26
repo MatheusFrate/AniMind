@@ -35,6 +35,7 @@ def ensure_vector_schema(db_or_conn) -> None:
         CREATE INDEX IF NOT EXISTS idx_anime_embeddings_hnsw
         ON anime_embeddings USING hnsw (embedding vector_cosine_ops);
     """))
+    db_or_conn.execute(text("ALTER TABLE anime_embeddings ENABLE ROW LEVEL SECURITY;"))
     db_or_conn.commit()
 
 

@@ -173,6 +173,8 @@ def sync_gold_to_postgres():
                 
                 print(f"[INFO] Salvando {total_linhas} registros na tabela '{nome_tabela}'...")
                 df.to_sql(name=nome_tabela, con=conn, if_exists="replace", index=False)
+                if conn.dialect.name == "postgresql":
+                    conn.execute(text(f"ALTER TABLE {nome_tabela} ENABLE ROW LEVEL SECURITY;"))
                 print(f"[OK] Tabela '{nome_tabela}' atualizada com sucesso!")
 
         elapsed = round(time.time() - start_time, 2)
