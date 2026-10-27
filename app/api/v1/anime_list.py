@@ -18,7 +18,7 @@ def _parse_date(date_str):
         return None
 
 def _save_user_animelist_to_bronze(username: str, all_data_items: list, profile_data: dict = None):
-    """Salva uma cópia imutável em JSON do perfil e lista de animes do usuário no Data Lake (Bronze)."""
+    """Salva uma cópia imutável em JSON do perfil e lista de animes do usuário no Data Lake (Bronze local e Cloud S3)."""
     try:
         raiz_projeto = Path(__file__).resolve().parent.parent.parent.parent
         caminho_bronze_users = raiz_projeto / "data_lake" / "bronze" / "users"
@@ -38,7 +38,21 @@ def _save_user_animelist_to_bronze(username: str, all_data_items: list, profile_
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(payload, f, ensure_ascii=False, indent=4)
 
-        print(f"[BRONZE] Perfil e lista de '{username}' salvos com sucesso em: {filepath}")
+        print(f"[BRONZE] Perfil e lista de '{username}' salvos localmente em: {filepath}")
+
+        # Envia automaticamente para o Supabase Storage S3 (Cloud Lakehouse)
+        try:
+            from orchestration.lake_storage import get_s3_client
+            s3, bucket = get_s3_client()
+            if s3 and bucket:
+                s3_key = f"bronze/users/{filename}"
+                s3.upload_file(str(filepath), bucket, s3_key)
+                print(f"[BRONZE] Perfil de '{username}' sincronizado com sucesso na nuvem S3: {bucket}/{s3_key}")
+            else:
+                print(f"[BRONZE] S3 não configurado no ambiente. Arquivo mantido apenas localmente.")
+        except Exception as e_s3:
+            print(f"[BRONZE] Aviso: falha ao enviar JSON de '{username}' para o Cloud S3: {e_s3}")
+
     except Exception as e:
         print(f"[BRONZE] Erro ao salvar JSON de usuário no Data Lake: {e}")
 
