@@ -127,6 +127,36 @@ def sync_lake_to_cloud(prefix: str = "") -> int:
         except Exception as e:
             print(f"[WARN] Erro ao enviar {rel_str}: {e}")
 
+    # Limpeza de arquivos órfãos no S3 para tabelas gerenciadas (Silver e Gold)
+    # Evita acúmulo de arquivos part-*.parquet antigos com UUIDs diferentes gerados por overwrite do Spark
+    cleanable_prefixes = ("silver/", "gold/")
+    remote_keys_to_delete = []
+
+    for remote_key in existing_remote:
+        if any(remote_key.startswith(p) for p in cleanable_prefixes):
+            local_file = LOCAL_LAKE_DIR / remote_key
+            # Se a pasta local da tabela existe, mas o arquivo específico não está mais lá: é um parquet antigo
+            if local_file.parent.exists() and not local_file.exists():
+                remote_keys_to_delete.append({"Key": remote_key})
+
+    if remote_keys_to_delete:
+        print(f"[CLEANUP] [Lake Sync] Removendo {len(remote_keys_to_delete)} arquivos órfãos (Parquet sobrescritos) do Cloud S3...")
+        from concurrent.futures import ThreadPoolExecutor
+
+        def _delete_one(key):
+            try:
+                s3.delete_object(Bucket=bucket, Key=key)
+                return True
+            except Exception as e_del:
+                print(f"[WARN] Erro ao remover {key}: {e_del}")
+                return False
+
+        keys_only = [item["Key"] for item in remote_keys_to_delete]
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            results = list(executor.map(_delete_one, keys_only))
+        deleted_count = sum(1 for r in results if r)
+        print(f"[OK] [Lake Sync] Limpeza concluída: {deleted_count} arquivos órfãos removidos do S3!")
+
     print(f"[OK] [Lake Sync] Upload concluido! {uploaded_count} arquivos sincronizados com a nuvem.")
     return uploaded_count
 

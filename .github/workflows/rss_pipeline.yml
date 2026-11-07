@@ -2,8 +2,8 @@ name: "01 - RSS News & User Activity Flow"
 
 on:
   schedule:
-    # Executa a cada 1 hora no minuto 12 (evita filas de minuto cheio)
-    - cron: '12 * * * *'
+    # Executa diariamente às 06:12 UTC (evita consumo excessivo de execuções/egress)
+    - cron: '12 6 * * *'
   workflow_dispatch: # Permite disparo manual com 1 clique pelo GitHub
 
 jobs:

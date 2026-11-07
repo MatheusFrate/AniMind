@@ -30,6 +30,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Cache Data Lakehouse (Evita Egress no Supabase Storage)
+        uses: actions/cache@v4
+        with:
+          path: data_lake
+          key: lakehouse-data-lake-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            lakehouse-data-lake-${{ runner.os }}-
+
       - name: Executar PySpark Lakehouse Flow
         env:
           PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
