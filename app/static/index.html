@@ -470,6 +470,221 @@
       -webkit-line-clamp: unset;
     }
 
+    /* ── RAG Mode Switch & Concierge IA ──────── */
+    .rag-mode-switch {
+      display: flex;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .rag-mode-btn {
+      flex: 1;
+      min-width: 240px;
+      background: var(--bg-dark);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .rag-mode-btn:hover {
+      border-color: var(--accent-purple);
+      color: var(--text-main);
+    }
+    .rag-mode-btn.active {
+      background: rgba(139, 92, 246, 0.14);
+      border-color: var(--accent-purple);
+      color: var(--text-main);
+      box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.25);
+    }
+    .rag-mode-btn.concierge.active {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.16), rgba(236, 72, 153, 0.14));
+      border-color: var(--accent-pink);
+      box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25);
+    }
+    .rag-mode-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .rag-mode-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .btn-concierge {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+      color: white;
+    }
+    .btn-concierge:hover {
+      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.35);
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .concierge-panel {
+      background: linear-gradient(160deg, rgba(20, 27, 45, 0.95), rgba(30, 22, 48, 0.92));
+      border: 1px solid rgba(236, 72, 153, 0.35);
+      border-radius: 14px;
+      padding: 1.2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.25s ease;
+    }
+    .concierge-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 1rem;
+    }
+    .concierge-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      align-items: center;
+    }
+    .concierge-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      background: rgba(139, 92, 246, 0.16);
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      color: #ddd6fe;
+    }
+    .concierge-badge.pink {
+      background: rgba(236, 72, 153, 0.15);
+      border-color: rgba(236, 72, 153, 0.35);
+      color: #fbcfe8;
+    }
+    .concierge-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      max-height: 760px;
+      overflow-y: auto;
+      padding-right: 0.35rem;
+    }
+    .concierge-summary {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--text-main);
+      margin-bottom: 0.85rem;
+      padding: 0.55rem 0.8rem;
+      background: rgba(139, 92, 246, 0.1);
+      border-left: 3px solid var(--accent-purple);
+      border-radius: 8px;
+    }
+    .concierge-rec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 0.9rem;
+    }
+    .concierge-rec-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(139, 92, 246, 0.28);
+      border-radius: 12px;
+      padding: 0.95rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .concierge-rec-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-pink);
+    }
+    .concierge-rec-reason {
+      font-size: 0.84rem;
+      line-height: 1.55;
+      color: #e2e8f0;
+      background: rgba(139, 92, 246, 0.08);
+      border-left: 3px solid var(--accent-pink);
+      border-radius: 8px;
+      padding: 0.65rem 0.8rem;
+    }
+    .concierge-turn-user {
+      align-self: flex-end;
+      max-width: 85%;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      color: var(--text-main);
+      padding: 0.65rem 0.95rem;
+      border-radius: 12px 12px 2px 12px;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    .concierge-turn-model {
+      align-self: stretch;
+      background: rgba(11, 15, 25, 0.65);
+      border: 1px solid var(--card-border);
+      border-radius: 12px 12px 12px 2px;
+      padding: 0.95rem 1.1rem;
+    }
+    .concierge-markdown {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text-main);
+    }
+    .concierge-markdown h2,
+    .concierge-markdown h3,
+    .concierge-markdown h4 {
+      color: #e9d5ff;
+      margin: 0.7rem 0 0.35rem;
+      font-size: 0.98rem;
+    }
+    .concierge-markdown h2:first-child,
+    .concierge-markdown h3:first-child,
+    .concierge-markdown p:first-child {
+      margin-top: 0;
+    }
+    .concierge-markdown p {
+      margin: 0.45rem 0;
+    }
+    .concierge-markdown ul,
+    .concierge-markdown ol {
+      margin: 0.45rem 0 0.45rem 1.35rem;
+    }
+    .concierge-markdown li {
+      margin-bottom: 0.3rem;
+    }
+    .concierge-markdown strong {
+      color: #f5d0fe;
+    }
+    .concierge-markdown code {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.84em;
+    }
+    .concierge-followup-bar {
+      margin-top: 1rem;
+      padding-top: 0.9rem;
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .concierge-followup-row {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
     /* ── Heatmap ─────────────────────────────── */
     .heatmap-wrap { overflow-x: auto; padding-bottom: 0.5rem; }
     .heatmap-grid {
@@ -1153,15 +1368,15 @@
 
       </div><!-- /panel-sequels -->
 
-      <!-- TAB: Recomendações (IA: Busca Semântica RAG + Filtro Colaborativo ALS) -->
+      <!-- TAB: Recomendações (IA: Busca Semântica RAG + Concierge IA + Filtro Colaborativo ALS) -->
       <div class="tab-panel" id="panel-rag">
-        <!-- 1. Busca Semântica (RAG) -->
+        <!-- 1. Busca Semântica (RAG) & AniMind Concierge -->
         <div class="table-card" style="margin-bottom: 2rem; border-color: rgba(139,92,246,0.4);">
           <div class="card-header collapsible-header" onclick="toggleSection('ragSectionBody', 'ragCollapseBtn')" style="flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0;">
             <div>
-              <div class="card-title">🧠 Recomendador Semântico — Natural Language Anime Search</div>
+              <div class="card-title">🧠 AniMind Concierge &amp; Busca Semântica (RAG)</div>
               <div class="card-subtitle" style="margin-top:0.25rem;">
-                Descreva a atmosfera, temas ou enredo em linguagem natural. A busca por similaridade de cosseno (Gemini Embeddings + Supabase pgvector) encontra obras pela essência!
+                Alterne entre a busca vetorial instantânea (pgvector) ou o Concierge IA completo (Gemini 3.5 Flash Lite + seu perfil de gosto).
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -1173,21 +1388,36 @@
           </div>
 
           <div id="ragSectionBody" class="collapsible-body" style="margin-top: 1.1rem;">
-            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <!-- Seletor dos dois modos lado a lado -->
+            <div class="rag-mode-switch">
+              <button type="button" class="rag-mode-btn active" id="ragModeFastBtn" onclick="setRagMode('fast')">
+                <span class="rag-mode-title">⚡ Busca Vetorial Rápida</span>
+                <span class="rag-mode-desc">Instantânea · Usa apenas embedding + pgvector (economiza cota LLM)</span>
+              </button>
+              <button type="button" class="rag-mode-btn concierge" id="ragModeConciergeBtn" onclick="setRagMode('concierge')">
+                <span class="rag-mode-title">💬 Perguntar ao Concierge IA (RAG Completo)</span>
+                <span class="rag-mode-desc">Analisa seu perfil + candidatos do pgvector e explica por que você vai curtir</span>
+              </button>
+            </div>
+
+            <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
               <input
                 type="text"
                 id="ragQueryInput"
                 class="library-search"
                 style="flex: 1; min-width: 260px; font-size: 0.95rem; padding: 0.85rem 1.1rem;"
                 placeholder="Ex: Animes com atmosfera melancólica e cyberpunk dos anos 90 onde o protagonista lida com isolamento social..."
-                onkeydown="if(event.key==='Enter') runSemanticSearch()"
+                onkeydown="if(event.key==='Enter') handleRagEnter()"
               >
-              <button class="btn" id="ragSearchBtn" onclick="runSemanticSearch()" style="padding: 0.85rem 1.6rem;">
-                <span id="ragSearchBtnText">✨ Buscar por Semântica</span>
+              <button type="button" class="btn btn-secondary" id="ragSearchBtn" onclick="runSemanticSearch()" style="padding: 0.85rem 1.25rem;">
+                <span id="ragSearchBtnText">⚡ Busca Rápida</span>
+              </button>
+              <button type="button" class="btn btn-concierge" id="ragConciergeBtn" onclick="runConciergeAsk()" style="padding: 0.85rem 1.35rem;">
+                <span id="ragConciergeBtnText">💬 Perguntar ao Concierge IA</span>
               </button>
             </div>
 
-            <!-- Filtros opcionais da busca semântica -->
+            <!-- Filtros opcionais da busca semântica e RAG -->
             <div style="display: flex; align-items: center; gap: 1.5rem; margin-top: 0.9rem; flex-wrap: wrap; font-size: 0.84rem; color: var(--text-muted);">
               <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
                 <input type="checkbox" id="ragExcludeWatched" checked style="accent-color: var(--accent-purple); width: 16px; height: 16px;">
@@ -1203,20 +1433,68 @@
                   <option value="8.0">⭐ 8.0+</option>
                 </select>
               </div>
+
+              <div style="display: flex; align-items: center; gap: 0.45rem;">
+                <span>Formato:</span>
+                <select id="ragMediaType" class="sort-select" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; margin: 0;">
+                  <option value="" selected>Todos os formatos</option>
+                  <option value="tv">📺 TV</option>
+                  <option value="movie">🎬 Filme (Movie)</option>
+                  <option value="ova">💿 OVA</option>
+                  <option value="ona">🌐 ONA</option>
+                  <option value="special">✨ Special</option>
+                </select>
+              </div>
             </div>
 
             <!-- Sugestões de busca clicáveis -->
             <div class="sequels-filters" style="margin-top: 1rem; margin-bottom: 1.25rem;">
-              <button class="sequel-chip" onclick="setRagExamplePrompt('Animes com atmosfera melancólica e cyberpunk dos anos 90 onde o protagonista lida com isolamento social')">🌆 Cyberpunk Melancólico Anos 90</button>
-              <button class="sequel-chip" onclick="setRagExamplePrompt('Suspense psicológico intenso sobre viagem no tempo e consequências trágicas de mudar o passado')">⏳ Thriller de Viagem no Tempo</button>
-              <button class="sequel-chip" onclick="setRagExamplePrompt('Jornada filosófica e contemplativa em um mundo pós-apocalíptico silencioso')">🌿 Pós-Apocalíptico Contemplativo</button>
-              <button class="sequel-chip" onclick="setRagExamplePrompt('Comédia romântica madura entre adultos no ambiente de trabalho ou faculdade sem clichês escolares')">💼 Romance Maduro sem Clichês</button>
+              <button type="button" class="sequel-chip" onclick="setRagExamplePrompt('Animes com atmosfera melancólica e cyberpunk dos anos 90 onde o protagonista lida com isolamento social')">🌆 Cyberpunk Melancólico Anos 90</button>
+              <button type="button" class="sequel-chip" onclick="setRagExamplePrompt('Suspense psicológico intenso sobre viagem no tempo e consequências trágicas de mudar o passado')">⏳ Thriller de Viagem no Tempo</button>
+              <button type="button" class="sequel-chip" onclick="setRagExamplePrompt('Jornada filosófica e contemplativa em um mundo pós-apocalíptico silencioso')">🌿 Pós-Apocalíptico Contemplativo</button>
+              <button type="button" class="sequel-chip" onclick="setRagExamplePrompt('Um filme de anime emocionante sobre música, memórias e amadurecimento')">🎬 Filme Emocionante</button>
+            </div>
+
+            <!-- Painel do Concierge IA (exibido acima da grade de cards no modo RAG Completo) -->
+            <div id="ragConciergeContainer" class="concierge-panel" style="display: none;">
+              <div class="concierge-header">
+                <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                  <strong style="font-size: 1rem; color: var(--text-main);">🤖 Análise do AniMind Concierge</strong>
+                  <div class="concierge-badges">
+                    <span class="concierge-badge" id="conciergeProfileBadge" style="display: none;"></span>
+                    <span class="concierge-badge pink" id="conciergeModelBadge" style="display: none;"></span>
+                  </div>
+                </div>
+                <button type="button" class="collapse-btn" onclick="resetConciergeChat()">🗑️ Limpar Conversa</button>
+              </div>
+
+              <div id="ragConciergeMessages" class="concierge-messages"></div>
+
+              <div class="concierge-followup-bar" id="ragFollowupBar">
+                <div class="concierge-followup-row">
+                  <input
+                    type="text"
+                    id="ragFollowupInput"
+                    class="library-search"
+                    placeholder="Pergunte algo sobre essas recomendações (ex: Desses, qual é o mais curto? Quero o mais sombrio...)"
+                    onkeydown="if(event.key==='Enter') runConciergeFollowup()"
+                  >
+                  <button type="button" class="btn btn-concierge" id="ragFollowupBtn" onclick="runConciergeFollowup()" style="padding: 0.5rem 1.1rem;">
+                    <span id="ragFollowupBtnText">💬 Enviar</span>
+                  </button>
+                </div>
+                <div class="sequels-filters" style="margin-top: 0;">
+                  <button type="button" class="sequel-chip" onclick="runConciergeFollowup('Desses candidatos, qual é o mais curto e direto ao ponto?')">⏱️ Qual é o mais curto?</button>
+                  <button type="button" class="sequel-chip" onclick="runConciergeFollowup('Qual deles tem a atmosfera mais psicológica e intensa?')">🎭 Qual é o mais psicológico?</button>
+                  <button type="button" class="sequel-chip" onclick="runConciergeFollowup('Qual desses tem melhor avaliação geral e encaixa melhor com meus estúdios favoritos?')">🏆 Melhor com meu gosto</button>
+                </div>
+              </div>
             </div>
 
             <div id="ragResultsGrid" class="rag-grid">
               <div class="compare-state" style="grid-column: 1 / -1;">
                 <div class="icon">🧠</div>
-                <div>Digite uma descrição livre acima ou clique em um dos exemplos para buscar no espaço vetorial!</div>
+                <div>Digite uma descrição livre acima ou clique em um dos exemplos para buscar no espaço vetorial ou conversar com o Concierge IA!</div>
               </div>
             </div>
           </div>
@@ -1367,6 +1645,10 @@
 
     // ── Profile data ─────────────────────────────
     async function loadProfileData(username) {
+      const excludeLabel = document.getElementById('ragExcludeUserLabel');
+      if (excludeLabel) excludeLabel.textContent = username || 'o perfil atual';
+      resetConciergeChat();
+
       try {
         const response = await fetch(`/api/v1/user/${username}/stats`);
         if (response.ok) {
@@ -2572,7 +2854,11 @@
       document.getElementById('sharedGrid').innerHTML = renderSharedGrid(shared_animes, filter, user1.name, user2.name);
     }
 
-    // ── Busca Semântica (RAG / pgvector) ─────────────────────────
+    // ── Busca Semântica (RAG / pgvector) & AniMind Concierge ─────
+    let activeRagMode = 'fast';
+    let conciergeHistory = []; // mantém até 3 turnos anteriores (6 mensagens)
+    let isRagLoading = false;
+
     async function loadRagStatus() {
       const el = document.getElementById('ragIndexStatus');
       try {
@@ -2585,13 +2871,267 @@
       }
     }
 
+    function setRagMode(mode) {
+      activeRagMode = mode === 'concierge' ? 'concierge' : 'fast';
+      const fastBtn = document.getElementById('ragModeFastBtn');
+      const conciergeBtn = document.getElementById('ragModeConciergeBtn');
+      const input = document.getElementById('ragQueryInput');
+      if (fastBtn) fastBtn.classList.toggle('active', activeRagMode === 'fast');
+      if (conciergeBtn) conciergeBtn.classList.toggle('active', activeRagMode === 'concierge');
+      if (input) {
+        input.placeholder = activeRagMode === 'concierge'
+          ? 'Pergunte ao Concierge IA (ex: Quero algo psicológico como Steins;Gate, mas com atmosfera mais sombria...)'
+          : 'Ex: Animes com atmosfera melancólica e cyberpunk dos anos 90 onde o protagonista lida com isolamento social...';
+      }
+    }
+
+    function handleRagEnter() {
+      if (activeRagMode === 'concierge') {
+        runConciergeAsk();
+      } else {
+        runSemanticSearch();
+      }
+    }
+
     function setRagExamplePrompt(promptText) {
       const input = document.getElementById('ragQueryInput');
       input.value = promptText;
-      runSemanticSearch();
+      handleRagEnter();
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatInlineMarkdown(escapedLine) {
+      return escapedLine
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    }
+
+    function formatConciergeMarkdown(rawText) {
+      const escaped = escapeHtml(rawText).replace(/\r\n/g, '\n');
+      const lines = escaped.split('\n');
+      let html = '';
+      let listType = null;
+
+      const closeList = () => {
+        if (listType) {
+          html += `</${listType}>`;
+          listType = null;
+        }
+      };
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          closeList();
+          continue;
+        }
+        if (trimmed.startsWith('### ')) {
+          closeList();
+          html += `<h4>${formatInlineMarkdown(trimmed.slice(4))}</h4>`;
+        } else if (trimmed.startsWith('## ')) {
+          closeList();
+          html += `<h3>${formatInlineMarkdown(trimmed.slice(3))}</h3>`;
+        } else if (trimmed.startsWith('# ')) {
+          closeList();
+          html += `<h2>${formatInlineMarkdown(trimmed.slice(2))}</h2>`;
+        } else if (/^[-*]\s+/.test(trimmed)) {
+          if (listType !== 'ul') {
+            closeList();
+            listType = 'ul';
+            html += '<ul>';
+          }
+          html += `<li>${formatInlineMarkdown(trimmed.replace(/^[-*]\s+/, ''))}</li>`;
+        } else if (/^\d+\.\s+/.test(trimmed)) {
+          if (listType !== 'ol') {
+            closeList();
+            listType = 'ol';
+            html += '<ol>';
+          }
+          html += `<li>${formatInlineMarkdown(trimmed.replace(/^\d+\.\s+/, ''))}</li>`;
+        } else {
+          closeList();
+          html += `<p>${formatInlineMarkdown(trimmed)}</p>`;
+        }
+      }
+      closeList();
+      return html;
+    }
+
+    function getRagFilters() {
+      const excludeEl = document.getElementById('ragExcludeWatched');
+      const minScoreEl = document.getElementById('ragMinScore');
+      const mediaTypeEl = document.getElementById('ragMediaType');
+      return {
+        excludeWatched: excludeEl ? excludeEl.checked : true,
+        minScore: minScoreEl ? minScoreEl.value : '',
+        mediaType: mediaTypeEl ? mediaTypeEl.value : '',
+      };
+    }
+
+    function renderRagCards(items, emptyMessage = 'Nenhum anime encontrado no índice vetorial.') {
+      const grid = document.getElementById('ragResultsGrid');
+      if (!grid) return;
+
+      if (!items || items.length === 0) {
+        grid.innerHTML = `<div class="compare-state" style="grid-column: 1 / -1;"><div class="icon">📭</div><div>${escapeHtml(emptyMessage)}</div></div>`;
+        return;
+      }
+
+      grid.innerHTML = items.map((item, idx) => {
+        const pic = item.main_picture || 'https://via.placeholder.com/160x220?text=?';
+        const titleSafe = escapeHtml(item.title);
+        const studioSafe = escapeHtml(item.studio || 'Estúdio N/A');
+        const mediaSafe = escapeHtml(item.media_type ? item.media_type.toUpperCase() : 'TV');
+        const synopsisSafe = escapeHtml(item.synopsis || 'Sem sinopse disponível.');
+        const genreList = (item.genres || '').split(',').map(g => g.trim()).filter(Boolean);
+        const visibleGenres = genreList.slice(0, 3);
+        const extraGenres = genreList.length - visibleGenres.length;
+        const genrePillsHtml = visibleGenres.map(g => `<span class="rag-genre-pill">${escapeHtml(g)}</span>`).join('')
+          + (extraGenres > 0 ? `<span class="rag-genre-pill" title="${escapeHtml(genreList.slice(3).join(', '))}">+${extraGenres}</span>` : '');
+        const hybridTitle = item.hybrid_score !== undefined ? `Score híbrido (semântica + qualidade): ${item.hybrid_score}%` : '';
+
+        return `
+          <div class="rag-card">
+            <div class="rag-card-top">
+              <a href="https://myanimelist.net/anime/${item.anime_id}" target="_blank" rel="noopener">
+                <img src="${pic}" alt="${titleSafe}" class="rag-card-poster" loading="lazy" onerror="this.style.background='#1e293b'">
+              </a>
+              <div class="rag-card-meta">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                  <span class="relation-badge sequel" title="${hybridTitle}" style="background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); font-size: 0.74rem; padding: 0.15rem 0.55rem; border-radius: 6px; font-weight: 700;">
+                    🎯 ${item.similarity_pct}% Match
+                  </span>
+                  <span style="font-size: 0.78rem; color: var(--warning); font-weight: 700;">
+                    ⭐ ${item.mean ? item.mean.toFixed(2) : 'N/A'}
+                  </span>
+                </div>
+                <a href="https://myanimelist.net/anime/${item.anime_id}" target="_blank" rel="noopener" style="text-decoration: none;">
+                  <div class="rag-card-title" title="${titleSafe}">#${idx + 1} ${titleSafe}</div>
+                </a>
+                <div style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  🎬 ${studioSafe} · ${mediaSafe} ${item.num_episodes ? `(${item.num_episodes} eps)` : ''}
+                </div>
+                <div class="rag-genre-pills">
+                  ${genrePillsHtml}
+                </div>
+              </div>
+            </div>
+            <div class="rag-card-synopsis" onclick="this.classList.toggle('expanded')" title="Clique para expandir ou recolher a sinopse">
+              ${synopsisSafe}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setRagButtonsDisabled(disabled) {
+      isRagLoading = disabled;
+      ['ragSearchBtn', 'ragConciergeBtn', 'ragFollowupBtn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = disabled;
+      });
+    }
+
+    function resetConciergeChat() {
+      conciergeHistory = [];
+      const container = document.getElementById('ragConciergeContainer');
+      const messagesEl = document.getElementById('ragConciergeMessages');
+      const followupInput = document.getElementById('ragFollowupInput');
+      const profileBadge = document.getElementById('conciergeProfileBadge');
+      const modelBadge = document.getElementById('conciergeModelBadge');
+      if (messagesEl) messagesEl.innerHTML = '';
+      if (followupInput) followupInput.value = '';
+      if (profileBadge) {
+        profileBadge.style.display = 'none';
+        profileBadge.textContent = '';
+      }
+      if (modelBadge) {
+        modelBadge.style.display = 'none';
+        modelBadge.textContent = '';
+      }
+      if (container) container.style.display = 'none';
+    }
+
+    function renderConciergeRecCards(recs) {
+      return `
+        <div class="concierge-rec-grid">
+          ${recs.map((item, idx) => {
+            const pic = item.main_picture || 'https://via.placeholder.com/160x220?text=?';
+            const titleSafe = escapeHtml(item.title);
+            const studioSafe = escapeHtml(item.studio || 'Estúdio N/A');
+            const mediaSafe = escapeHtml(item.media_type ? item.media_type.toUpperCase() : 'TV');
+            const genreList = (item.genres || '').split(',').map(g => g.trim()).filter(Boolean);
+            const visibleGenres = genreList.slice(0, 3);
+            const extraGenres = genreList.length - visibleGenres.length;
+            const genrePillsHtml = visibleGenres.map(g => `<span class="rag-genre-pill">${escapeHtml(g)}</span>`).join('')
+              + (extraGenres > 0 ? `<span class="rag-genre-pill" title="${escapeHtml(genreList.slice(3).join(', '))}">+${extraGenres}</span>` : '');
+
+            return `
+              <div class="concierge-rec-card">
+                <div class="rag-card-top">
+                  <a href="https://myanimelist.net/anime/${item.anime_id}" target="_blank" rel="noopener">
+                    <img src="${pic}" alt="${titleSafe}" class="rag-card-poster" loading="lazy" onerror="this.style.background='#1e293b'">
+                  </a>
+                  <div class="rag-card-meta">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                      <span class="relation-badge sequel" style="background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); font-size: 0.74rem; padding: 0.15rem 0.55rem; border-radius: 6px; font-weight: 700;">
+                        🎯 ${item.similarity_pct}% Match
+                      </span>
+                      <span style="font-size: 0.78rem; color: var(--warning); font-weight: 700;">
+                        ⭐ ${item.mean ? item.mean.toFixed(2) : 'N/A'}
+                      </span>
+                    </div>
+                    <a href="https://myanimelist.net/anime/${item.anime_id}" target="_blank" rel="noopener" style="text-decoration: none;">
+                      <div class="rag-card-title" title="${titleSafe}">#${idx + 1} ${titleSafe}</div>
+                    </a>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      🎬 ${studioSafe} · ${mediaSafe} ${item.num_episodes ? `(${item.num_episodes} eps)` : ''}
+                    </div>
+                    <div class="rag-genre-pills">
+                      ${genrePillsHtml}
+                    </div>
+                  </div>
+                </div>
+                <div class="concierge-rec-reason">
+                  ✨ ${formatInlineMarkdown(escapeHtml(item.reason || ''))}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function renderConciergeMessages() {
+      const messagesEl = document.getElementById('ragConciergeMessages');
+      if (!messagesEl) return;
+
+      messagesEl.innerHTML = conciergeHistory.map(msg => {
+        if (msg.role === 'user') {
+          return `<div class="concierge-turn-user">${escapeHtml(msg.content)}</div>`;
+        }
+        if (msg.recommendations && msg.recommendations.length > 0) {
+          const summaryHtml = msg.summary
+            ? `<div class="concierge-summary">${formatInlineMarkdown(escapeHtml(msg.summary))}</div>`
+            : '';
+          return `<div class="concierge-turn-model">${summaryHtml}${renderConciergeRecCards(msg.recommendations)}</div>`;
+        }
+        return `<div class="concierge-turn-model"><div class="concierge-markdown">${formatConciergeMarkdown(msg.content)}</div></div>`;
+      }).join('');
+      messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
     async function runSemanticSearch() {
+      if (isRagLoading) return;
       const query = document.getElementById('ragQueryInput').value.trim();
       const grid = document.getElementById('ragResultsGrid');
       const btnText = document.getElementById('ragSearchBtnText');
@@ -2600,17 +3140,17 @@
         return;
       }
 
-      const excludeChecked = document.getElementById('ragExcludeWatched').checked;
-      const minScore = document.getElementById('ragMinScore').value;
+      setRagMode('fast');
+      const conciergeContainer = document.getElementById('ragConciergeContainer');
+      if (conciergeContainer) conciergeContainer.style.display = 'none';
 
+      const { excludeWatched, minScore, mediaType } = getRagFilters();
       const params = new URLSearchParams({ q: query, limit: '12' });
-      if (excludeChecked && activeUsername) {
-        params.set('exclude_user', activeUsername);
-      }
-      if (minScore) {
-        params.set('min_score', minScore);
-      }
+      if (excludeWatched && activeUsername) params.set('exclude_user', activeUsername);
+      if (minScore) params.set('min_score', minScore);
+      if (mediaType) params.set('media_type', mediaType);
 
+      setRagButtonsDisabled(true);
       btnText.textContent = '⏳ Vetorizando...';
       grid.innerHTML = `<div class="compare-state" style="grid-column: 1 / -1;"><div class="icon">🔮</div><div>Convertendo sua frase em vetor de 768 dimensões e consultando o pgvector...</div></div>`;
 
@@ -2620,58 +3160,150 @@
         if (!res.ok) {
           throw new Error(data.detail || 'Falha na busca semântica');
         }
+        renderRagCards(
+          data.results || [],
+          'Nenhum anime encontrado no índice vetorial para esses filtros.'
+        );
+      } catch (err) {
+        grid.innerHTML = `<div class="compare-state" style="grid-column: 1 / -1; color: #ef4444;"><div class="icon">⚠️</div><div>${escapeHtml(err.message)}</div></div>`;
+      } finally {
+        btnText.textContent = '⚡ Busca Rápida';
+        setRagButtonsDisabled(false);
+      }
+    }
 
-        const items = data.results || [];
-        if (items.length === 0) {
-          grid.innerHTML = `<div class="compare-state" style="grid-column: 1 / -1;"><div class="icon">📭</div><div>Nenhum anime encontrado no índice vetorial. Certifique-se de que o indexador RAG já foi executado!</div></div>`;
-          return;
+    async function runConciergeAsk() {
+      if (isRagLoading) return;
+      const query = document.getElementById('ragQueryInput').value.trim();
+      if (!query || query.length < 3) {
+        showToast('⚠️ Digite uma pergunta ou descrição com pelo menos 3 caracteres.');
+        return;
+      }
+      setRagMode('concierge');
+      conciergeHistory = [];
+      await executeConciergeTurn(query, false);
+    }
+
+    async function runConciergeFollowup(presetText = null) {
+      if (isRagLoading) return;
+      const input = document.getElementById('ragFollowupInput');
+      const query = (presetText || (input ? input.value : '')).trim();
+      if (!query || query.length < 3) {
+        showToast('⚠️ Digite uma pergunta de acompanhamento com pelo menos 3 caracteres.');
+        return;
+      }
+      if (!presetText && input) input.value = '';
+      await executeConciergeTurn(query, true);
+    }
+
+    async function executeConciergeTurn(query, isFollowup) {
+      const container = document.getElementById('ragConciergeContainer');
+      const messagesEl = document.getElementById('ragConciergeMessages');
+      const grid = document.getElementById('ragResultsGrid');
+      const mainBtnText = document.getElementById('ragConciergeBtnText');
+      const followupBtnText = document.getElementById('ragFollowupBtnText');
+      const profileBadge = document.getElementById('conciergeProfileBadge');
+      const modelBadge = document.getElementById('conciergeModelBadge');
+
+      const { excludeWatched, minScore, mediaType } = getRagFilters();
+      const historyPayload = isFollowup
+        ? conciergeHistory.slice(-6).map(m => ({ role: m.role, content: m.content }))
+        : [];
+
+      setRagButtonsDisabled(true);
+      if (isFollowup) {
+        followupBtnText.textContent = '⏳ Pensando...';
+      } else {
+        mainBtnText.textContent = '⏳ Consultando IA...';
+        grid.innerHTML = `<div class="compare-state" style="grid-column: 1 / -1;"><div class="icon">🤖</div><div>Recuperando candidatos no pgvector e gerando análise personalizada com Gemini...</div></div>`;
+      }
+
+      if (container) container.style.display = 'block';
+      renderConciergeMessages();
+      if (messagesEl) {
+        messagesEl.insertAdjacentHTML('beforeend', `
+          <div class="concierge-turn-user">${escapeHtml(query)}</div>
+          <div class="concierge-turn-model" id="conciergeLoadingTurn">
+            <span class="loader" style="vertical-align: middle; margin-right: 0.5rem;"></span>
+            <span style="font-size: 0.88rem; color: var(--text-muted);">Analisando seu perfil e cruzando candidatos do pgvector...</span>
+          </div>
+        `);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      try {
+        const res = await fetch('/api/v1/rag/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query,
+            username: activeUsername || null,
+            exclude_watched: excludeWatched,
+            min_score: minScore ? parseFloat(minScore) : null,
+            media_type: mediaType || null,
+            limit: 8,
+            history: historyPayload,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || 'Falha ao consultar o Concierge IA');
         }
 
-        grid.innerHTML = items.map((item, idx) => {
-          const pic = item.main_picture || 'https://via.placeholder.com/160x220?text=?';
-          const synopsisText = item.synopsis || 'Sem sinopse disponível.';
-          const genreList = (item.genres || '').split(',').map(g => g.trim()).filter(Boolean);
-          const visibleGenres = genreList.slice(0, 3);
-          const extraGenres = genreList.length - visibleGenres.length;
-          const genrePillsHtml = visibleGenres.map(g => `<span class="rag-genre-pill">${g}</span>`).join('')
-            + (extraGenres > 0 ? `<span class="rag-genre-pill" title="${genreList.slice(3).join(', ')}">+${extraGenres}</span>` : '');
+        conciergeHistory.push({ role: 'user', content: query });
+        conciergeHistory.push({
+          role: 'model',
+          content: data.answer || '',
+          summary: data.summary || '',
+          recommendations: data.recommendations || [],
+        });
+        conciergeHistory = conciergeHistory.slice(-6);
 
-          return `
-            <div class="rag-card">
-              <div class="rag-card-top">
-                <a href="https://myanimelist.net/anime/${item.anime_id}" target="_blank" rel="noopener">
-                  <img src="${pic}" alt="${item.title}" class="rag-card-poster" loading="lazy" onerror="this.style.background='#1e293b'">
-                </a>
-                <div class="rag-card-meta">
-                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
-                    <span class="relation-badge sequel" style="background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); font-size: 0.74rem; padding: 0.15rem 0.55rem; border-radius: 6px; font-weight: 700;">
-                      🎯 ${item.similarity_pct}% Match
-                    </span>
-                    <span style="font-size: 0.78rem; color: var(--warning); font-weight: 700;">
-                      ⭐ ${item.mean ? item.mean.toFixed(2) : 'N/A'}
-                    </span>
-                  </div>
-                  <a href="https://myanimelist.net/anime/${item.anime_id}" target="_blank" rel="noopener" style="text-decoration: none;">
-                    <div class="rag-card-title" title="${item.title}">#${idx + 1} ${item.title}</div>
-                  </a>
-                  <div style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    🎬 ${item.studio || 'Estúdio N/A'} · ${item.media_type ? item.media_type.toUpperCase() : 'TV'} ${item.num_episodes ? `(${item.num_episodes} eps)` : ''}
-                  </div>
-                  <div class="rag-genre-pills">
-                    ${genrePillsHtml}
-                  </div>
-                </div>
-              </div>
-              <div class="rag-card-synopsis" onclick="this.classList.toggle('expanded')" title="Clique para expandir ou recolher a sinopse">
-                ${synopsisText}
-              </div>
-            </div>
-          `;
-        }).join('');
+        if (profileBadge) {
+          if (data.user_profile) {
+            const topGenres = (data.user_profile.top_genres || []).slice(0, 2).map(g => g.genre).join(', ');
+            profileBadge.textContent = topGenres
+              ? `🎯 Perfil: ${data.user_profile.username} (${topGenres})`
+              : `🎯 Perfil: ${data.user_profile.username}`;
+          } else {
+            profileBadge.textContent = '🌐 Modo Geral (sem perfil vinculado)';
+          }
+          profileBadge.style.display = 'inline-block';
+        }
+        if (modelBadge) {
+          modelBadge.textContent = `✨ ${data.model || 'gemini-3.5-flash-lite'}`;
+          modelBadge.style.display = 'inline-block';
+        }
+
+        renderConciergeMessages();
+        const recIds = new Set((data.recommendations || []).map(r => r.anime_id));
+        const extraSources = recIds.size > 0
+          ? (data.sources || []).filter(s => !recIds.has(s.anime_id))
+          : (data.sources || []);
+        if (extraSources.length > 0) {
+          renderRagCards(extraSources);
+          if (recIds.size > 0) {
+            grid.insertAdjacentHTML(
+              'afterbegin',
+              `<div style="grid-column: 1 / -1; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin-top: 0.25rem;">📚 Outras opções similares no catálogo (pgvector)</div>`
+            );
+          }
+        } else {
+          grid.innerHTML = '';
+        }
       } catch (err) {
-        grid.innerHTML = `<div class="compare-state" style="grid-column: 1 / -1; color: #ef4444;"><div class="icon">⚠️</div><div>${err.message}</div></div>`;
+        const loadingTurn = document.getElementById('conciergeLoadingTurn');
+        if (loadingTurn) {
+          loadingTurn.innerHTML = `<div style="color: #ef4444; font-size: 0.88rem;">⚠️ ${escapeHtml(err.message)}</div>`;
+        }
+        if (!isFollowup) {
+          grid.innerHTML = `<div class="compare-state" style="grid-column: 1 / -1; color: #ef4444;"><div class="icon">⚠️</div><div>${escapeHtml(err.message)}</div></div>`;
+        }
       } finally {
-        btnText.textContent = '✨ Buscar por Semântica';
+        mainBtnText.textContent = '💬 Perguntar ao Concierge IA';
+        followupBtnText.textContent = '💬 Enviar';
+        setRagButtonsDisabled(false);
       }
     }
   </script>
